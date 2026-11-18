@@ -5,7 +5,7 @@
 
 **현재 상태: 웹 프로토타입 v0.1 동작 (2026-11-18 기준)**
 
-`app/`에 4단계 웹 프로토타입이 있습니다. 초안을 올리면(또는 표준 틀에서 시작하면) 빈틈을 점검해 후임자 관점 질문을 던지고, 공개 약관의 근거 조항을 조문 번호·쪽수와 함께 보여 준 뒤, 정리된 인수인계서와 "아직 답하지 못한 질문 목록"으로 내보냅니다. 실행 방법과 검증 결과는 [9. 웹 프로토타입](#9-웹-프로토타입-v01--2026-11-18)과 [`docs/prototype-v0.1.md`](docs/prototype-v0.1.md)에 정리했습니다.
+`app/`에 4단계 웹 프로토타입이 있습니다. 초안을 올리면(또는 표준 틀에서 시작하면) 빈틈을 점검해 후임자 관점 질문을 던지고, 공개 약관의 근거 조항을 조문 번호·쪽수와 함께 보여 준 뒤, 정리된 인수인계서와 "아직 답하지 못한 질문 목록"으로 내보냅니다. 실행 방법과 검증 결과는 [9. 웹 프로토타입](#9-웹-프로토타입-v01--2026-11-18)과 [`docs/prototype-v0.1.md`](docs/prototype-v0.1.md)에 정리했습니다. 이 버전을 만들며 정한 내용과 11/18 회의 기록은 [`planning/meetings/261118-meeting-summary.md`](planning/meetings/261118-meeting-summary.md)에 있습니다.
 
 ---
 
@@ -62,7 +62,7 @@
 
 | 이름 | GitHub | 역할·기여 | 저장소에 남긴 기록 |
 |---|---|---|---|
-| 이시내 | [@sn0508-beep](https://github.com/sn0508-beep) | 저장소 개설·운영 총괄, 문서 구조화, 회의 요약, 웹 프로토타입(v0.1) 설계·구현 주도 | `README.md`, `planning/meetings/261111-meeting-summary.md`, `docs/prototype-v0.1.md`, `app/`, `idea-exploration-LEESINE.md`, `idea-exploration-LEESINE2.md` |
+| 이시내 | [@sn0508-beep](https://github.com/sn0508-beep) | 저장소 개설·운영 총괄, 문서 구조화, 회의 요약, 웹 프로토타입(v0.1) 설계·구현 주도 | `README.md`, `planning/meetings/261111-meeting-summary.md`, `planning/meetings/261118-meeting-summary.md`, `docs/prototype-v0.1.md`, `app/`, `idea-exploration-LEESINE.md`, `idea-exploration-LEESINE2.md` |
 | 최선주 | [@tteokbokkiyumyum](https://github.com/tteokbokkiyumyum) | 아이디어 탐색, 홍보 전략·채널별 게시 문구·인수인계서 품질 체크리스트 초안 작성 | `idea-exploration-CHOISUNJU.md`, `planning/promote/` 3건 |
 | 오홍걸 | [@zhdzm123](https://github.com/zhdzm123) | 아이디어 탐색, 11/11 회의 전사본 정리 | `idea-exploration-Hong.md`, `261111-record.md`(회의 전사본) |
 | 변지훈 | [@drum101014-dev](https://github.com/drum101014-dev) | 아이디어 탐색(현장 노하우 매뉴얼화) | `idea-exploration-BYEON.md` |
@@ -89,8 +89,8 @@ GitHub 핸들은 각 문서를 실제로 커밋한 작성자 계정과 파일명
 - 2026-11-11 같은 날 팀원별 탐색 기록과 회의 전사본 업로드 (총 6개 문서)
 - 2026-11-18 위 문서 6건 파일명에 `.md` 확장자 적용 (내용·서술 변경 없음, README 링크만 함께 갱신)
 - 2026-11-18 11/11 회의 요약본 정리 (@sn0508-beep, `planning/meetings/261111-meeting-summary.md`) — 전사본에 없는 결정·일정·역할은 넣지 않고 작성
-- 2026-11-18 설계·진행 정리 (@sn0508-beep, `planning/meetings/261118-design-and-prototype.md`) — 4단계 화면 흐름·입력 형식·약관 색인 구조·사내 보안 구조 확정
-- 2026-11-18 문제 정의 보강 (@sn0508-beep, `README.md` 2장 · 같은 날 설계 정리 2장) — 후임자는 아무것도 모르는 상태에서 시작한다는 전제, 기존 사내 인수인계 사이트의 한계, 제3자(AI)가 다듬어 주는 과정의 가치를 제품 설명의 기준으로 정리
+- 2026-11-18 11/18 회의 요약 (@sn0508-beep, `planning/meetings/261118-meeting-summary.md`) — 회의 전사본과 같은 날 설계·구현 기록을 한 문서로 정리. 제품 형태(웹 앱)·4단계 화면 흐름·입력 형식·약관 처리 방식·표준화 범위·홍보 방향·다음 단계
+- 2026-11-18 문제 정의 보강 (@sn0508-beep, `README.md` 2장 · 같은 날 회의 요약 5.1) — 후임자는 아무것도 모르는 상태에서 시작한다는 전제, 기존 사내 인수인계 사이트의 한계, 제3자(AI)가 다듬어 주는 과정의 가치를 제품 설명의 기준으로 정리
 - 2026-11-18 홍보 전략·채널별 게시 문구·품질 체크리스트 초안 업로드 (@tteokbokkiyumyum, `planning/promote/`)
 - 2026-11-18 웹 프로토타입 v0.1 구현 (@sn0508-beep, `app/` — 4단계 화면 · 파일 4형식 파서 · 규칙 기반 꼬리질문 · 약관 조문 매칭 · 내보내기), 자동 테스트 44개 통과 — 검증 내용은 `docs/prototype-v0.1.md`
 - `LICENSE`는 여전히 미정
@@ -131,7 +131,7 @@ inganingong/
     │   └── idea-exploration-BYEON.md      # 변지훈 — 현장 노하우 매뉴얼화(Field-Tail)
     ├── meetings/
     │   ├── 261111-meeting-summary.md      # 2026-11-11 회의 결정·세팅·남은 일 요약 (전사본 근거, 2026-11-18 정리)
-    │   └── 261118-design-and-prototype.md # 2026-11-18 설계·진행 정리 (문제 정의·4단계 흐름·입력 형식·보안 구조·v0.1 검증)
+    │   └── 261118-meeting-summary.md      # 2026-11-18 회의 요약 + 같은 날 설계·구현 (문제 정의·4단계 흐름·입력 형식·약관 방식·보안·홍보·v0.1 검증)
     └── promote/
         ├── promotion-strategy.md          # 홍보 전략 초안 (2026-11-18, 팀 검토 전)
         ├── channel-copy-drafts.md         # 채널별 게시 문구 초안 (A~E)
@@ -140,7 +140,7 @@ inganingong/
 
 위 문서 6건은 2026-11-18에 파일명에 `.md` 확장자를 붙여 GitHub에서 마크다운으로 렌더링되도록 했습니다(내용은 수정하지 않았습니다). 앞으로 결정 기록·기술 검증 문서는 `docs/`로 모아 정리할 계획입니다.
 
-`planning/meetings/`는 회의 요약과 날짜별 설계·진행 정리를 날짜 순으로 모으는 폴더입니다. 회의는 전사본을 원문으로 두고 결정과 근거 발언을 시간 표시와 함께 정리하고, 사이에 낀 설계·진행은 같은 날짜 형식으로 따로 남깁니다. 첫 문서는 `261111-meeting-summary.md`, 두 번째는 `261118-design-and-prototype.md`입니다.
+`planning/meetings/`는 회의 요약과 날짜별 설계·진행 정리를 날짜 순으로 모으는 폴더입니다. 회의는 전사본을 원문으로 두고 결정과 근거 발언을 시간 표시와 함께 정리하고, 같은 날 진행한 설계·구현 기록은 그 회의 요약에 이어 붙여 한 파일로 남깁니다. 첫 문서는 `261111-meeting-summary.md`, 두 번째는 `261118-meeting-summary.md`입니다.
 
 ---
 
@@ -230,6 +230,6 @@ python -m pytest tests   # 자동 테스트
 
 - 회의 전사본: `planning/ideas/261111-record.md` (네이버 클로바노트 전사, 자동 전사 오류가 있을 수 있으며 내용은 임의 수정하지 않았습니다)
 - 회의 요약본: `planning/meetings/261111-meeting-summary.md` (2026-11-11 회의의 결정·근거·저장소 세팅 합의·남은 일을 전사본만을 근거로 정리, 2026-11-18 작성)
-- 설계·진행 정리: `planning/meetings/261118-design-and-prototype.md` (2026-11-18 문제 정의·화면 4단계·입력 형식·약관 색인 구조·사내 보안 구조 확정과 v0.1 검증 결과)
+- 11/18 회의 요약: `planning/meetings/261118-meeting-summary.md` (2026-11-18 회의의 결정·근거 발언과 같은 날 확정한 설계(문제 정의·화면 4단계·입력 형식·약관 처리·사내 보안) 및 v0.1 검증 결과를 한 문서로 정리)
 - 팀원별 탐색 기록: `planning/ideas/` 각 파일
 - 같은 업무를 하는 분들의 의견, 특히 **인수인계서에서 실제로 가장 많이 빠지는 항목**에 대한 피드백을 환영합니다. 홍보·피드백 기록도 이 저장소에 계속 남깁니다.
