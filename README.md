@@ -52,14 +52,14 @@
 
 ## 4. 팀
 
-| 이름 | GitHub | 저장소에 남긴 기록 |
-|---|---|---|
-| 이시내 | [@sn0508-beep](https://github.com/sn0508-beep) | `idea-exploration-LEESINE.md`, `idea-exploration-LEESINE2.md` |
-| 최선주 | [@tteokbokkiyumyum](https://github.com/tteokbokkiyumyum) | `idea-exploration-CHOISUNJU.md` |
-| 오홍걸 | [@zhdzm123](https://github.com/zhdzm123) | `idea-exploration-Hong.md`, `261111-record.md`(회의 전사본) |
-| 변지훈 | [@drum101014-dev](https://github.com/drum101014-dev) | `idea-exploration-BYEON.md` |
+| 이름 | GitHub | 역할·기여 | 저장소에 남긴 기록 |
+|---|---|---|---|
+| 이시내 | [@sn0508-beep](https://github.com/sn0508-beep) | 저장소 개설·운영 총괄, 문서 구조화, 회의 요약, 웹 프로토타입(v0.1) 설계·구현 주도 | `README.md`, `planning/meetings/261111-meeting-summary.md`, `docs/prototype-v0.1.md`, `app/`, `idea-exploration-LEESINE.md`, `idea-exploration-LEESINE2.md` |
+| 최선주 | [@tteokbokkiyumyum](https://github.com/tteokbokkiyumyum) | 아이디어 탐색, 홍보 전략·채널별 게시 문구·인수인계서 품질 체크리스트 초안 작성 | `idea-exploration-CHOISUNJU.md`, `planning/promote/` 3건 |
+| 오홍걸 | [@zhdzm123](https://github.com/zhdzm123) | 아이디어 탐색, 11/11 회의 전사본 정리 | `idea-exploration-Hong.md`, `261111-record.md`(회의 전사본) |
+| 변지훈 | [@drum101014-dev](https://github.com/drum101014-dev) | 아이디어 탐색(현장 노하우 매뉴얼화) | `idea-exploration-BYEON.md` |
 
-GitHub 핸들은 각 문서를 실제로 커밋한 작성자 계정과 파일명이 일치하는 것을 확인해 적었습니다. **역할 분담은 아직 정해지지 않았습니다.**
+GitHub 핸들은 각 문서를 실제로 커밋한 작성자 계정과 파일명이 일치하는 것을 확인해 적었고, 역할은 커밋·파일에 남은 범위에서만 정리했습니다. 초기 저장소·문서·프로토타입 골격은 이시내(@sn0508-beep)를 중심으로 구축하고 있으며, 세부 개발·홍보 역할은 팀 협의를 통해 확장 중입니다.
 
 ---
 
@@ -69,7 +69,7 @@ GitHub 핸들은 각 문서를 실제로 커밋한 작성자 계정과 파일명
 
 | 주차 | 기간(안) | 내용 | 상태 |
 |---|---|---|---|
-| 1주차 | 11/11 ~ 11/17 | 방향 수렴, 팀원별 아이디어 탐색 기록 6건 업로드, 저장소 세팅 | ✅ 완료 |
+| 1주차 | 11/11 ~ 11/17 | 방향 수렴, 팀원별 아이디어 탐색 기록 6건 업로드, 저장소 개설·세팅(@sn0508-beep) | ✅ 완료 |
 | 2주차 | 11/18 ~ 11/24 | MVP 범위 확정, 가상 인수인계서 샘플 설계, 꼬리질문 프레임워크·체크리스트 초안, 화면·구조 설계 | 🟨 진행 중 — 화면·구조·12항목 체크리스트·가상 샘플 완료(v0.1) |
 | 3주차 | 11/25 ~ 12/01 | 핵심 기능 구현 — 초안 입력 → 꼬리질문 생성 → 빈틈 목록·정리본 출력 | ⬜ 진행 예정 |
 | 4주차 | 12/02 ~ 12/08 | 작성 가이드라인과 약관·법규 근거 제시 붙이기, 가상 자료로 시범 테스트, 한계·오류 정리 | ⬜ 진행 예정 |
@@ -80,8 +80,9 @@ GitHub 핸들은 각 문서를 실제로 커밋한 작성자 계정과 파일명
 - 2026-11-11 저녁 팀 회의로 주제 방향 확정
 - 2026-11-11 같은 날 팀원별 탐색 기록과 회의 전사본 업로드 (총 6개 문서)
 - 2026-11-18 위 문서 6건 파일명에 `.md` 확장자 적용 (내용·서술 변경 없음, README 링크만 함께 갱신)
-- 2026-11-18 11/11 회의 요약본 정리 (`planning/meetings/261111-meeting-summary.md`) — 전사본에 없는 결정·일정·역할은 넣지 않고 작성
-- 2026-11-18 웹 프로토타입 v0.1 구현 (`app/`, 4단계 화면 · 파일 4형식 파서 · 규칙 기반 꼬리질문 · 약관 조문 매칭 · 내보내기), 자동 테스트 44개 통과 — 검증 내용은 `docs/prototype-v0.1.md`
+- 2026-11-18 11/11 회의 요약본 정리 (@sn0508-beep, `planning/meetings/261111-meeting-summary.md`) — 전사본에 없는 결정·일정·역할은 넣지 않고 작성
+- 2026-11-18 홍보 전략·채널별 게시 문구·품질 체크리스트 초안 업로드 (@tteokbokkiyumyum, `planning/promote/`)
+- 2026-11-18 웹 프로토타입 v0.1 구현 (@sn0508-beep, `app/` — 4단계 화면 · 파일 4형식 파서 · 규칙 기반 꼬리질문 · 약관 조문 매칭 · 내보내기), 자동 테스트 44개 통과 — 검증 내용은 `docs/prototype-v0.1.md`
 - `LICENSE`는 여전히 미정
 
 ---
@@ -118,8 +119,12 @@ inganingong/
     │   ├── idea-exploration-CHOISUNJU.md  # 최선주 — 회의록 실행 추적 → 인수인계 인터뷰어
     │   ├── idea-exploration-Hong.md       # 오홍걸 — 업무 자동화 후보 탐색과 판단 기준
     │   └── idea-exploration-BYEON.md      # 변지훈 — 현장 노하우 매뉴얼화(Field-Tail)
-    └── meetings/
-        └── 261111-meeting-summary.md      # 2026-11-11 회의 결정·세팅·남은 일 요약 (전사본 근거, 2026-11-18 정리)
+    ├── meetings/
+    │   └── 261111-meeting-summary.md      # 2026-11-11 회의 결정·세팅·남은 일 요약 (전사본 근거, 2026-11-18 정리)
+    └── promote/
+        ├── promotion-strategy.md          # 홍보 전략 초안 (2026-11-18, 팀 검토 전)
+        ├── channel-copy-drafts.md         # 채널별 게시 문구 초안 (A~E)
+        └── handover-checklist-draft.md    # 인수인계서 품질 체크리스트 초안 (6개 영역 46개 항목)
 ```
 
 위 문서 6건은 2026-11-18에 파일명에 `.md` 확장자를 붙여 GitHub에서 마크다운으로 렌더링되도록 했습니다(내용은 수정하지 않았습니다). 앞으로 결정 기록·기술 검증 문서는 `docs/`로 모아 정리할 계획입니다.
@@ -166,7 +171,7 @@ inganingong/
 
 ## 9. 웹 프로토타입 (v0.1) — 2026-11-18
 
-기획만 있던 상태에서, 회의에서 정한 세 축을 **눌러 볼 수 있는 화면**으로 옮겼습니다. API 키 없이, 인터넷 없이도 그 자리에서 돌아갑니다.
+기획만 있던 상태에서, 회의에서 정한 세 축을 **눌러 볼 수 있는 화면**으로 옮겼습니다. API 키 없이, 인터넷 없이도 그 자리에서 돌아갑니다. 화면 흐름과 구현은 이시내(@sn0508-beep)가 맡았습니다.
 
 **실행**
 
