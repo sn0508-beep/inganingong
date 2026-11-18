@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+
+# 실행 중 생기는 파일
+screenshots/
+*.log
+.DS_Store
+
+# 환경변수(LLM 키 등) — 절대 커밋하지 않습니다
+.env
+.env.*

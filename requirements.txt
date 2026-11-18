@@ -1,0 +1,12 @@
+# 실행에 필요한 패키지
+Flask>=3.0,<4.0
+pypdf>=4.0            # PDF 텍스트 추출(기본)
+python-docx>=1.1      # .docx
+olefile>=0.47         # .hwp (한글 5.0 바이너리 컨테이너)
+lxml>=5.0             # .hwpx (OWPML XML)
+
+# 선택: 있으면 PDF 추출 품질이 더 좋아집니다(없으면 pypdf로 대체)
+# pymupdf>=1.24
+
+# 개발·테스트
+pytest>=8.0

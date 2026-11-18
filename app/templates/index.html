@@ -1,0 +1,235 @@
+{% macro icon(name) %}{% endmacro %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>인수인계서 AI — 후임자의 질문으로 빈틈을 채우는 인수인계서</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="brand-mark">인</span>
+      <div class="brand-text">
+        <strong>인수인계서 AI</strong>
+        <span>후임자의 질문으로 빈틈을 채우는 인수인계서</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="mode-badge" id="mode-badge" title="LLM 연결 상태">
+        <span class="dot"></span><span id="mode-label">{{ llm.label }}</span>
+      </span>
+      <span class="privacy-note" id="privacy-note">외부 전송 없음</span>
+    </div>
+  </div>
+</header>
+
+<nav class="stepper" aria-label="진행 단계">
+  <ol>
+    <li class="step is-active" data-step="1"><span class="num">1</span><span class="txt">시작</span></li>
+    <li class="step" data-step="2"><span class="num">2</span><span class="txt">빈틈 점검</span></li>
+    <li class="step" data-step="3"><span class="num">3</span><span class="txt">약관·규정 근거</span></li>
+    <li class="step" data-step="4"><span class="num">4</span><span class="txt">내보내기</span></li>
+  </ol>
+</nav>
+
+<main>
+  <!-- ============================ 1단계 ============================ -->
+  <section class="panel is-active" id="panel-1">
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-head">
+          <h2>초안 준비</h2>
+          <p class="muted">기존 인수인계서가 있으면 올리고, 없으면 표준 틀에서 시작하세요.</p>
+        </div>
+
+        <div class="tabs" role="tablist">
+          <button class="tab is-active" data-tab="file" role="tab">파일 올리기</button>
+          <button class="tab" data-tab="paste" role="tab">직접 붙여넣기</button>
+        </div>
+
+        <div class="tab-panel is-active" id="tab-file">
+          <label class="dropzone" id="dropzone" for="file-input">
+            <span class="dz-icon">↑</span>
+            <strong>파일을 끌어다 놓거나 클릭해서 선택</strong>
+            <span class="muted small">.hwp · .hwpx · .docx · .pdf · .txt · .md (최대 25MB)</span>
+            <input type="file" id="file-input" accept=".hwp,.hwpx,.docx,.pdf,.txt,.md" hidden />
+          </label>
+          <p class="file-status muted small" id="file-status"></p>
+          <ul class="warn-list" id="parse-warnings"></ul>
+        </div>
+
+        <div class="tab-panel" id="tab-paste">
+          <label class="field-label" for="draft-input">초안 텍스트</label>
+          <p class="muted small">업무 메모, 기존 인수인계서 내용, 회의 메모를 그대로 붙여넣어도 됩니다.</p>
+        </div>
+
+        <div class="btn-row mt">
+          <button class="btn ghost" id="btn-sample">가상 샘플 불러오기</button>
+          <button class="btn ghost" id="btn-template">표준 템플릿으로 시작</button>
+        </div>
+        <div class="sample-links">
+          <span class="muted small">같은 샘플을 파일로 받아 업로드 테스트:</span>
+          <a href="/api/samples/handover/md">.md</a>
+          <a href="/api/samples/handover/docx">.docx</a>
+          <a href="/api/samples/handover/hwpx">.hwpx</a>
+          <a href="/api/samples/handover/pdf">.pdf</a>
+        </div>
+        <p class="muted small mt-s" id="sample-notice">{{ sample_notice }}</p>
+
+        <label class="field-label mt" for="draft-input">초안 (여기서 바로 고칠 수 있습니다)</label>
+        <textarea id="draft-input" class="editor" rows="11"
+          placeholder="예)&#10;# 인수인계서&#10;- 담당 업무: 계약 변경 접수&#10;- 정기 업무: 매월 초 결과 보고"></textarea>
+
+        <div class="mask-box">
+          <div class="mask-row">
+            <div>
+              <strong>개인정보 자동 가림</strong>
+              <p class="muted small">전화번호·이메일·주민등록번호 등을 LLM에 보내기 전에 가립니다. 원문은 화면과 내보내기에 그대로 남습니다.</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="mask-toggle" checked />
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="mask-report" id="mask-report"></div>
+        </div>
+      </div>
+
+      <div class="card guide-card">
+        <div class="card-head">
+          <h2>작성 가이드 — 공기업 인수인계서 표준 12항목</h2>
+          <p class="muted">2단계 점검은 이 12개 항목을 그대로 기준으로 씁니다.</p>
+        </div>
+        <div class="guide-list" id="guide-list">
+          {% for item in checklist %}
+          <details class="guide-item">
+            <summary>
+              <span class="guide-num">{{ loop.index }}</span>
+              <span class="guide-title">{{ item.label }}</span>
+              <span class="muted small">{{ item.summary }}</span>
+            </summary>
+            <div class="guide-body">
+              <p>{{ item.guide }}</p>
+              <ul class="small">
+                {% for miss in item.misses %}<li>{{ miss }}</li>{% endfor %}
+              </ul>
+              <p class="example"><span>예시</span> {{ item.example }}</p>
+            </div>
+          </details>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ 2단계 ============================ -->
+  <section class="panel" id="panel-2">
+    <div class="summary-strip" id="analysis-summary"></div>
+    <div class="grid grid-side">
+      <aside class="card">
+        <div class="card-head">
+          <h2>항목별 점검</h2>
+          <p class="muted small">막대는 초안 기준, 옅은 부분은 답변으로 채워진 몫입니다.</p>
+        </div>
+        <div id="coverage-list" class="coverage-list"></div>
+      </aside>
+
+      <div class="card">
+        <div class="card-head row">
+          <div>
+            <h2>후임자 관점 꼬리질문</h2>
+            <p class="muted small">질문에 답하면 초안이 그만큼 채워집니다. 답을 모르면 '건너뜀'으로 남겨 두세요 — 마지막 문서에 '아직 답하지 못한 질문'으로 들어갑니다.</p>
+          </div>
+          <div class="filter-tabs" id="question-filter">
+            <button class="chip-tab is-active" data-filter="all">전체</button>
+            <button class="chip-tab" data-filter="unanswered">미답변</button>
+            <button class="chip-tab" data-filter="answered">답변 완료</button>
+            <button class="chip-tab" data-filter="skipped">건너뜀</button>
+          </div>
+        </div>
+        <div id="question-list" class="question-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ 3단계 ============================ -->
+  <section class="panel" id="panel-3">
+    <div class="card">
+      <div class="card-head row">
+        <div>
+          <h2>약관·규정 근거 위치</h2>
+          <p class="muted small">초안의 문장마다 근거가 될 만한 조항을 찾아 조문 번호·쪽수와 함께 보여 줍니다.</p>
+        </div>
+        <div class="reg-actions">
+          <select id="regulation-select" class="select"></select>
+          <button class="btn ghost" id="btn-upload-reg">규정 PDF 올리기</button>
+          <input type="file" id="reg-input" accept=".pdf" hidden />
+          <button class="btn" id="btn-match">조항 매칭</button>
+        </div>
+      </div>
+      <div class="reg-meta" id="reg-meta"></div>
+      <p class="disclaimer">이 기능은 법적 판단이 아니라 <strong>확인이 필요한 지점과 근거 후보</strong>를 짚는 검토 보조입니다. 실제 적용 여부는 원문 조항과 사내 규정을 직접 확인하세요.</p>
+    </div>
+    <div id="terms-summary" class="summary-strip"></div>
+    <div id="match-list" class="match-list"></div>
+  </section>
+
+  <!-- ============================ 4단계 ============================ -->
+  <section class="panel" id="panel-4">
+    <div class="grid grid-side">
+      <aside class="card">
+        <div class="card-head">
+          <h2>문서 정보</h2>
+          <p class="muted small">비워 두면 '(미정)'으로 내보냅니다.</p>
+        </div>
+        <div class="form-grid">
+          <label><span>인계자</span><input id="meta-author" placeholder="예) 김하늘 대리" /></label>
+          <label><span>인수자</span><input id="meta-successor" placeholder="예) 이도윤 주임" /></label>
+          <label class="wide"><span>부서 · 직무</span><input id="meta-team" placeholder="예) 고객지원팀 계약·요금 업무" /></label>
+          <label class="wide"><span>인수인계 기간</span><input id="meta-period" placeholder="예) 2026-12-01 ~ 2026-12-05" /></label>
+        </div>
+        <label class="check-row">
+          <input type="checkbox" id="include-terms" checked />
+          <span>약관 근거 검토 결과 포함</span>
+        </label>
+        <div class="btn-row">
+          <button class="btn" id="btn-export">문서 생성</button>
+        </div>
+        <div class="btn-row">
+          <button class="btn ghost" id="btn-download-md" disabled>.md 내려받기</button>
+          <button class="btn ghost" id="btn-download-txt" disabled>.txt 내려받기</button>
+          <button class="btn ghost" id="btn-copy" disabled>복사</button>
+        </div>
+        <div class="open-questions" id="open-questions"></div>
+      </aside>
+
+      <div class="card preview-card">
+        <div class="card-head">
+          <h2>정리된 인수인계서</h2>
+          <p class="muted small" id="export-hint">문서를 생성하면 여기에 미리보기가 나옵니다.</p>
+        </div>
+        <div class="md-preview" id="export-preview"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="bottombar">
+  <div class="bottombar-inner">
+    <button class="btn ghost" id="btn-prev">← 이전</button>
+    <div class="step-hint" id="step-hint">초안을 준비하면 다음 단계로 갈 수 있습니다.</div>
+    <button class="btn primary" id="btn-next" disabled>빈틈 점검 →</button>
+  </div>
+</footer>
+
+<script>
+  window.__LLM__ = {{ llm | tojson }};
+  window.__CLIPBOARD_NOTICE__ = "복사되었습니다";
+</script>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
