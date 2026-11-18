@@ -54,10 +54,10 @@
 
 | 이름 | GitHub | 저장소에 남긴 기록 |
 |---|---|---|
-| 이시내 | [@sn0508-beep](https://github.com/sn0508-beep) | `idea-exploration-LEESINE`, `idea-exploration-LEESINE2` |
-| 최선주 | [@tteokbokkiyumyum](https://github.com/tteokbokkiyumyum) | `idea-exploration-CHOISUNJU` |
-| 오홍걸 | [@zhdzm123](https://github.com/zhdzm123) | `idea-exploration-Hong`, `261111-record`(회의 전사본) |
-| 변지훈 | [@drum101014-dev](https://github.com/drum101014-dev) | `idea-exploration-BYEON` |
+| 이시내 | [@sn0508-beep](https://github.com/sn0508-beep) | `idea-exploration-LEESINE.md`, `idea-exploration-LEESINE2.md` |
+| 최선주 | [@tteokbokkiyumyum](https://github.com/tteokbokkiyumyum) | `idea-exploration-CHOISUNJU.md` |
+| 오홍걸 | [@zhdzm123](https://github.com/zhdzm123) | `idea-exploration-Hong.md`, `261111-record.md`(회의 전사본) |
+| 변지훈 | [@drum101014-dev](https://github.com/drum101014-dev) | `idea-exploration-BYEON.md` |
 
 GitHub 핸들은 각 문서를 실제로 커밋한 작성자 계정과 파일명이 일치하는 것을 확인해 적었습니다. **역할 분담은 아직 정해지지 않았습니다.**
 
@@ -79,7 +79,8 @@ GitHub 핸들은 각 문서를 실제로 커밋한 작성자 계정과 파일명
 
 - 2026-11-11 저녁 팀 회의로 주제 방향 확정
 - 2026-11-11 같은 날 팀원별 탐색 기록과 회의 전사본 업로드 (총 6개 문서)
-- 그 이후 추가 커밋 없음 / 코드, `LICENSE`, 실행 안내 없음 — 즉 **구현 전 단계**
+- 2026-11-18 위 문서 6건 파일명에 `.md` 확장자 적용 (내용·서술 변경 없음, README 링크만 함께 갱신)
+- 그 밖의 추가 커밋 없음 / 코드, `LICENSE`, 실행 안내 없음 — 즉 **구현 전 단계**
 
 ---
 
@@ -90,15 +91,15 @@ inganingong/
 ├── README.md
 └── planning/
     └── ideas/
-        ├── 261111-record               # 2026-11-11 팀 회의 전사본 (Zoom, 19분 38초)
-        ├── idea-exploration-LEESINE    # 이시내 — 아이디어 후보 정리와 검토 기준
-        ├── idea-exploration-LEESINE2   # 이시내 — AI와의 토론 로그 (2026-11-08 ~ 11-09)
-        ├── idea-exploration-CHOISUNJU  # 최선주 — 회의록 실행 추적 → 인수인계 인터뷰어
-        ├── idea-exploration-Hong       # 오홍걸 — 업무 자동화 후보 탐색과 판단 기준
-        └── idea-exploration-BYEON      # 변지훈 — 현장 노하우 매뉴얼화(Field-Tail)
+        ├── 261111-record.md               # 2026-11-11 팀 회의 전사본 (Zoom, 19분 38초)
+        ├── idea-exploration-LEESINE.md    # 이시내 — 아이디어 후보 정리와 검토 기준
+        ├── idea-exploration-LEESINE2.md   # 이시내 — AI와의 토론 로그 (2026-11-08 ~ 11-09)
+        ├── idea-exploration-CHOISUNJU.md  # 최선주 — 회의록 실행 추적 → 인수인계 인터뷰어
+        ├── idea-exploration-Hong.md       # 오홍걸 — 업무 자동화 후보 탐색과 판단 기준
+        └── idea-exploration-BYEON.md      # 변지훈 — 현장 노하우 매뉴얼화(Field-Tail)
 ```
 
-정리 예정: 위 문서들은 파일명에 `.md` 확장자가 없어 GitHub에서 마크다운으로 렌더링되지 않습니다. 내용 정리와 함께 확장자를 붙이고, 결정 기록·기술 검증 문서를 `docs/`로 옮길 계획입니다.
+위 문서 6건은 2026-11-18에 파일명에 `.md` 확장자를 붙여 GitHub에서 마크다운으로 렌더링되도록 했습니다(내용은 수정하지 않았습니다). 앞으로 결정 기록·기술 검증 문서는 `docs/`로 모아 정리할 계획입니다.
 
 ---
 
@@ -146,6 +147,6 @@ inganingong/
 
 ## 10. 기록과 피드백
 
-- 회의 전사본: `planning/ideas/261111-record` (네이버 클로바노트 전사, 자동 전사 오류가 있을 수 있으며 내용은 임의 수정하지 않았습니다)
+- 회의 전사본: `planning/ideas/261111-record.md` (네이버 클로바노트 전사, 자동 전사 오류가 있을 수 있으며 내용은 임의 수정하지 않았습니다)
 - 팀원별 탐색 기록: `planning/ideas/` 각 파일
 - 같은 업무를 하는 분들의 의견, 특히 **인수인계서에서 실제로 가장 많이 빠지는 항목**에 대한 피드백을 환영합니다. 홍보·피드백 기록도 이 저장소에 계속 남깁니다.
