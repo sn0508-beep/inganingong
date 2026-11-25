@@ -3,9 +3,9 @@
 > **후임자의 질문으로 인수인계서의 빈틈을 채우는 AI 도구**
 > 한양대학교 「인간-인공지능협업제품서비스설계」 팀 프로젝트 · 팀원 4명 · 5주
 
-**현재 상태: 웹 프로토타입 v0.1 동작 (2026-11-18 기준)**
+**현재 상태: 웹 프로토타입 v0.1 동작 (2026-11-25 기준)**
 
-`app/`에 4단계 웹 프로토타입이 있습니다. 초안을 올리면(또는 표준 틀에서 시작하면) 빈틈을 점검해 후임자 관점 질문을 던지고, 공개 약관의 근거 조항을 조문 번호·쪽수와 함께 보여 준 뒤, 정리된 인수인계서와 "아직 답하지 못한 질문 목록"으로 내보냅니다. 실행 방법과 검증 결과는 [9. 웹 프로토타입](#9-웹-프로토타입-v01--2026-11-18)과 [`docs/prototype-v0.1.md`](docs/prototype-v0.1.md)에 정리했습니다. 이 버전을 만들며 정한 내용과 11/18 회의 기록은 [`planning/meetings/261118-meeting-summary.md`](planning/meetings/261118-meeting-summary.md)에 있습니다.
+`app/`에 4단계 웹 프로토타입이 있습니다. 초안을 올리면(또는 표준 틀에서 시작하면) 빈틈을 점검해 후임자 관점 질문을 던지고, 공개 약관의 근거 조항을 조문 번호·쪽수와 함께 보여 준 뒤, 정리된 인수인계서와 "아직 답하지 못한 질문 목록"으로 내보냅니다. 실행 방법과 검증 결과는 [9. 웹 프로토타입](#9-웹-프로토타입-v01--2026-11-18)과 [`docs/prototype-v0.1.md`](docs/prototype-v0.1.md)에 정리했습니다. 이 버전을 만들며 정한 내용과 11/18 회의 기록은 [`planning/meetings/261118-meeting-summary.md`](planning/meetings/261118-meeting-summary.md)에, 11/25에 더한 AI 연결 환경 선택·문서 그림 감지·보완 흐름은 [`planning/meetings/261125-design-update.md`](planning/meetings/261125-design-update.md)에 있습니다.
 
 ---
 
@@ -62,7 +62,7 @@
 
 | 이름 | GitHub | 역할·기여 | 저장소에 남긴 기록 |
 |---|---|---|---|
-| 이시내 | [@sn0508-beep](https://github.com/sn0508-beep) | 저장소 개설·운영 총괄, 문서 구조화, 회의 요약, 웹 프로토타입(v0.1) 설계·구현 주도 | `README.md`, `planning/meetings/261111-meeting-summary.md`, `planning/meetings/261118-meeting-summary.md`, `docs/prototype-v0.1.md`, `app/`, `idea-exploration-LEESINE.md`, `idea-exploration-LEESINE2.md` |
+| 이시내 | [@sn0508-beep](https://github.com/sn0508-beep) | 저장소 개설·운영 총괄, 문서 구조화, 회의 요약, 웹 프로토타입(v0.1) 설계·구현 주도, 11/25 AI 환경·그림 감지 UX 설계 및 프로토타입 반영 | `README.md`, `planning/meetings/261111-meeting-summary.md`, `planning/meetings/261118-meeting-summary.md`, `planning/meetings/261125-design-update.md`, `docs/prototype-v0.1.md`, `app/`, `idea-exploration-LEESINE.md`, `idea-exploration-LEESINE2.md` |
 | 최선주 | [@tteokbokkiyumyum](https://github.com/tteokbokkiyumyum) | 아이디어 탐색, 홍보 전략·채널별 게시 문구·인수인계서 품질 체크리스트 초안 작성 | `idea-exploration-CHOISUNJU.md`, `planning/promote/` 3건 |
 | 오홍걸 | [@zhdzm123](https://github.com/zhdzm123) | 아이디어 탐색, 11/11 회의 전사본 정리 | `idea-exploration-Hong.md`, `261111-record.md`(회의 전사본) |
 | 변지훈 | [@drum101014-dev](https://github.com/drum101014-dev) | 아이디어 탐색(현장 노하우 매뉴얼화) | `idea-exploration-BYEON.md` |
@@ -93,6 +93,7 @@ GitHub 핸들은 각 문서를 실제로 커밋한 작성자 계정과 파일명
 - 2026-11-18 문제 정의 보강 (@sn0508-beep, `README.md` 2장 · 같은 날 회의 요약 5.1) — 후임자는 아무것도 모르는 상태에서 시작한다는 전제, 기존 사내 인수인계 사이트의 한계, 제3자(AI)가 다듬어 주는 과정의 가치를 제품 설명의 기준으로 정리
 - 2026-11-18 홍보 전략·채널별 게시 문구·품질 체크리스트 초안 업로드 (@tteokbokkiyumyum, `planning/promote/`)
 - 2026-11-18 웹 프로토타입 v0.1 구현 (@sn0508-beep, `app/` — 4단계 화면 · 파일 4형식 파서 · 규칙 기반 꼬리질문 · 약관 조문 매칭 · 내보내기), 자동 테스트 44개 통과 — 검증 내용은 `docs/prototype-v0.1.md`
+- 2026-11-25 AI 연결 환경 선택·그림 감지 보완 (@sn0508-beep, 커밋 `0702b08`·`3393f62`, 기록은 [`planning/meetings/261125-design-update.md`](planning/meetings/261125-design-update.md)) — AI 연결 환경 4단계 기준, 연동 실패 시 대안 선택 흐름, 문서 그림 감지·보완. 자동 테스트 22개 추가(67 passed / 1 skipped)
 - `LICENSE`는 여전히 미정
 
 ---
@@ -131,7 +132,8 @@ inganingong/
     │   └── idea-exploration-BYEON.md      # 변지훈 — 현장 노하우 매뉴얼화(Field-Tail)
     ├── meetings/
     │   ├── 261111-meeting-summary.md      # 2026-11-11 회의 결정·세팅·남은 일 요약 (전사본 근거, 2026-11-18 정리)
-    │   └── 261118-meeting-summary.md      # 2026-11-18 회의 요약 + 같은 날 설계·구현 (문제 정의·4단계 흐름·입력 형식·약관 방식·보안·홍보·v0.1 검증)
+    │   ├── 261118-meeting-summary.md      # 2026-11-18 회의 요약 + 같은 날 설계·구현 (문제 정의·4단계 흐름·입력 형식·약관 방식·보안·홍보·v0.1 검증)
+    │   └── 261125-design-update.md        # 2026-11-25 설계·UX 보완 기록 (AI 연결 환경 4단계·연동 실패 대안·문서 그림 감지·보완 흐름)
     └── promote/
         ├── promotion-strategy.md          # 홍보 전략 초안 (2026-11-18, 팀 검토 전)
         ├── channel-copy-drafts.md         # 채널별 게시 문구 초안 (A~E)
@@ -140,7 +142,7 @@ inganingong/
 
 위 문서 6건은 2026-11-18에 파일명에 `.md` 확장자를 붙여 GitHub에서 마크다운으로 렌더링되도록 했습니다(내용은 수정하지 않았습니다). 앞으로 결정 기록·기술 검증 문서는 `docs/`로 모아 정리할 계획입니다.
 
-`planning/meetings/`는 회의 요약과 날짜별 설계·진행 정리를 날짜 순으로 모으는 폴더입니다. 회의는 전사본을 원문으로 두고 결정과 근거 발언을 시간 표시와 함께 정리하고, 같은 날 진행한 설계·구현 기록은 그 회의 요약에 이어 붙여 한 파일로 남깁니다. 첫 문서는 `261111-meeting-summary.md`, 두 번째는 `261118-meeting-summary.md`입니다.
+`planning/meetings/`는 회의 요약과 날짜별 설계·진행 정리를 날짜 순으로 모으는 폴더입니다. 회의는 전사본을 원문으로 두고 결정과 근거 발언을 시간 표시와 함께 정리하고, 같은 날 진행한 설계·구현 기록은 그 회의 요약에 이어 붙여 한 파일로 남깁니다. 회의 없이 진행한 설계·보완은 별도 파일로 남깁니다. 첫 문서는 `261111-meeting-summary.md`, 두 번째는 `261118-meeting-summary.md`, 세 번째는 `261125-design-update.md`입니다.
 
 ---
 
@@ -184,6 +186,8 @@ inganingong/
 
 기획만 있던 상태에서, 회의에서 정한 세 축을 **눌러 볼 수 있는 화면**으로 옮겼습니다. API 키 없이, 인터넷 없이도 그 자리에서 돌아갑니다. 화면 흐름과 구현은 이시내(@sn0508-beep)가 맡았습니다.
 
+2026-11-25에는 여기에 **AI 연결 환경 선택(4단계)** 과 **문서 그림 감지·보완 흐름**을 더했습니다. 정한 내용과 근거는 [`planning/meetings/261125-design-update.md`](planning/meetings/261125-design-update.md)에 정리했습니다.
+
 **실행**
 
 ```bash
@@ -197,8 +201,8 @@ python -m pytest tests   # 자동 테스트
 
 | 단계 | 하는 일 |
 | --- | --- |
-| 1. 시작 | `.hwp` `.hwpx` `.docx` `.pdf` `.txt` 업로드 또는 붙여넣기 · 공기업 인수인계서 표준 12항목 틀로 시작 · 개인정보 가림 미리보기 |
-| 2. 빈틈 점검 | 12개 항목 커버리지 표시, 빈 곳과 모호한 표현을 겨냥한 후임자 관점 질문, 답변 입력·건너뜀 추적 |
+| 1. 시작 | `.hwp` `.hwpx` `.docx` `.pdf` `.txt` 업로드 또는 붙여넣기 · 공기업 인수인계서 표준 12항목 틀로 시작 · AI 연결 환경 선택(사내 AI 텍스트+그림 / 텍스트만 / 외부 AI 가림 / AI 미연결) · 개인정보 가림 미리보기 |
+| 2. 빈틈 점검 | 12개 항목 커버리지 표시, 빈 곳과 모호한 표현을 겨냥한 후임자 관점 질문, 답변 입력·건너뜀 추적 · 그림을 읽지 못하는 모드에서는 그림 N장 감지 안내와 보완 입력 |
 | 3. 약관·규정 근거 | 내장 기본공급약관(또는 올린 PDF)에서 초안 문장별 근거 후보 조문을 `조문 번호 · 쪽수 · 발췌`로 표시 |
 | 4. 내보내기 | 정리된 인수인계서 + **아직 답하지 못한 질문 목록**을 `.md` / `.txt`로 내려받기 |
 
@@ -208,15 +212,17 @@ python -m pytest tests   # 자동 테스트
 - **약관은 "올리면 색인"** — 기본공급약관은 예시일 뿐이고, 어떤 규정 PDF든 올리면 그 자리에서 조문·쪽수를 파싱해 같은 방식으로 찾습니다.
 - **억지로 붙이지 않기** — 근거가 약하면 신뢰도 `낮음`으로 표시하고, 화면·문서 모두에 "법적 판단이 아니라 확인 보조"라고 적었습니다.
 - **가린 뒤에 보내기** — 전화번호·이메일·주민등록번호를 가린 사본만 LLM으로 갑니다. 원문은 화면과 내보내기에 그대로 남습니다.
+- **AI는 환경 몫** — 연결할 수 있는 수준을 사내 AI(텍스트+그림 / 텍스트만)·외부 AI(민감정보 가림)·AI 미연결 4단계로 나누고, 연동이 안 되면 **"연동할 수 있는 AI를 찾지 못하였어요."** 와 대안 3가지(다시 연결 · 외부 AI · AI 없이 계속)를 같은 카드에 둡니다. 어떤 환경에서도 막히지 않습니다.
 
 **검증 요약** (자세한 내용은 [`docs/prototype-v0.1.md`](docs/prototype-v0.1.md))
 
-- `pytest`: 44 passed, 1 skipped
+- `pytest`: 67 passed, 1 skipped (11/18 44건 → 11/25 22건 추가)
 - 형식별 추출: `.hwpx` 631자 · `.docx` 684자 · `.pdf` 672자 · `.hwp`(실제 한글 파일) 1,599자
 - 내장 기본공급약관: 136쪽 → 조문 107개 색인, `요금 이의신청` 문장 → `제74조의2 · 59쪽`
 - 화면 4단계 자동 순회: 브라우저 콘솔 오류 0건
+- AI 연결·그림 감지 화면 자동 확인(`tools/screenshot_ai.py`): 콘솔 오류 0건
 
-**아직 안 한 것** — 업로드한 규정은 메모리에만 저장(재시작 시 사라짐), 스캔 PDF의 OCR, `.hwp` 서식 복원, 사내 규정 다중 색인. 자세한 한계와 다음 단계는 `docs/prototype-v0.1.md` 7장에 적었습니다.
+**아직 안 한 것** — 업로드한 규정은 메모리에만 저장(재시작 시 사라짐), 스캔 PDF의 OCR, 그림 속 글자 자동 인식(그림은 개수만 감지), `.hwp` 서식 복원, 사내 규정 다중 색인. 자세한 한계와 다음 단계는 `docs/prototype-v0.1.md` 7장에 적었습니다.
 
 ---
 
@@ -231,5 +237,6 @@ python -m pytest tests   # 자동 테스트
 - 회의 전사본: `planning/ideas/261111-record.md` (네이버 클로바노트 전사, 자동 전사 오류가 있을 수 있으며 내용은 임의 수정하지 않았습니다)
 - 회의 요약본: `planning/meetings/261111-meeting-summary.md` (2026-11-11 회의의 결정·근거·저장소 세팅 합의·남은 일을 전사본만을 근거로 정리, 2026-11-18 작성)
 - 11/18 회의 요약: `planning/meetings/261118-meeting-summary.md` (2026-11-18 회의의 결정·근거 발언과 같은 날 확정한 설계(문제 정의·화면 4단계·입력 형식·약관 처리·사내 보안) 및 v0.1 검증 결과를 한 문서로 정리)
+- 11/25 설계·UX 보완 기록: [`planning/meetings/261125-design-update.md`](planning/meetings/261125-design-update.md) (문서 그림 감지, AI 연결 환경 4단계 기준, 연동 실패 시 대안 선택 UX와 프로토타입 반영 결과)
 - 팀원별 탐색 기록: `planning/ideas/` 각 파일
 - 같은 업무를 하는 분들의 의견, 특히 **인수인계서에서 실제로 가장 많이 빠지는 항목**에 대한 피드백을 환영합니다. 홍보·피드백 기록도 이 저장소에 계속 남깁니다.
