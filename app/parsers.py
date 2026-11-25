@@ -20,6 +20,11 @@ SUPPORTED_EXTENSIONS = (".pdf", ".docx", ".hwpx", ".hwp", ".txt", ".md")
 
 HWP_SIGNATURE = b"HWP Document File"
 
+#: 문서에 "그림"으로 세는 확장자. 그림 속 글자는 텍스트 추출 대상이 아니므로
+#: 개수만 세어 2단계에서 사람이 보완하도록 안내한다.
+IMAGE_EXTENSIONS = (".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tif", ".tiff",
+                    ".webp", ".svg", ".emf", ".wmf")
+
 
 class ParseError(Exception):
     """파일을 읽을 수 없을 때."""
@@ -33,6 +38,7 @@ class ParsedDocument:
     pages: list = field(default_factory=list)      # PDF만: 페이지별 텍스트
     warnings: list = field(default_factory=list)
     meta: dict = field(default_factory=dict)
+    image_count: int = 0                           # 문서에 들어 있는 서로 다른 그림 파일 수
 
     def to_dict(self):
         return {
@@ -43,6 +49,7 @@ class ParsedDocument:
             "page_count": len(self.pages),
             "warnings": self.warnings,
             "meta": self.meta,
+            "image_count": self.image_count,
             "char_count": len(self.text),
             "line_count": self.text.count("\n") + 1 if self.text else 0,
         }
@@ -75,6 +82,23 @@ def parse_pasted(text: str, filename: str = "붙여넣은 텍스트") -> ParsedD
     cleaned = _normalize(text)
     return ParsedDocument(filename=filename, kind="text", text=cleaned,
                           meta={"source": "paste"})
+
+
+def _count_zip_files(data: bytes, prefix: str, extensions=None) -> int:
+    """zip 컨테이너 안에서 prefix 아래에 든 파일 수(이미지 개수 세기용)."""
+    try:
+        with zipfile.ZipFile(io.BytesIO(data)) as archive:
+            names = archive.namelist()
+    except zipfile.BadZipFile:
+        return 0
+    total = 0
+    for name in names:
+        if not name.startswith(prefix) or name.endswith("/"):
+            continue
+        if extensions and not name.lower().endswith(extensions):
+            continue
+        total += 1
+    return total
 
 
 def _normalize(text: str) -> str:
@@ -114,12 +138,14 @@ def _parse_text(filename: str, data: bytes) -> ParsedDocument:
 
 def _parse_pdf(filename: str, data: bytes) -> ParsedDocument:
     pages, warnings, engine = [], [], None
+    image_count = 0
 
     try:  # PyMuPDF가 있으면 한글 추출 품질이 좋아 우선 사용
         import pymupdf  # type: ignore
 
         doc = pymupdf.open(stream=data, filetype="pdf")
         pages = [page.get_text() for page in doc]
+        image_count = sum(len(page.get_images(full=True)) for page in doc)
         meta = {k: v for k, v in (doc.metadata or {}).items() if v}
         doc.close()
         engine = "pymupdf"
@@ -129,6 +155,7 @@ def _parse_pdf(filename: str, data: bytes) -> ParsedDocument:
 
             reader = pypdf.PdfReader(io.BytesIO(data))
             pages = [(p.extract_text() or "") for p in reader.pages]
+            image_count = _pypdf_image_count(reader)
             meta = {}
             engine = "pypdf"
         except Exception as exc:
@@ -141,11 +168,28 @@ def _parse_pdf(filename: str, data: bytes) -> ParsedDocument:
         )
     if len(text.strip()) < 20:
         warnings.append("PDF에서 추출된 글자가 적습니다. 스캔본이면 OCR이 필요합니다.")
+    if image_count:
+        warnings.append(
+            f"그림 {image_count}장이 들어 있습니다. 그림 속 글자는 읽지 않았으니 "
+            "2단계에서 필요한 내용을 직접 적어 주세요."
+        )
 
     return ParsedDocument(
         filename=filename, kind="pdf", text=_normalize(text), pages=[_normalize(p) for p in pages],
-        warnings=warnings, meta={"engine": engine, "page_count": len(pages), **meta},
+        warnings=warnings, image_count=image_count,
+        meta={"engine": engine, "page_count": len(pages), **meta},
     )
+
+
+def _pypdf_image_count(reader) -> int:
+    """pypdf로 페이지별 이미지 XObject 수를 센다(읽지 못한 객체는 건너뛴다)."""
+    total = 0
+    for page in reader.pages:
+        try:
+            total += len(page.images)
+        except Exception:  # pragma: no cover - 깨진 이미지 객체
+            continue
+    return total
 
 
 # ---------------------------------------------------------------------------
@@ -197,13 +241,18 @@ def _parse_docx(filename: str, data: bytes) -> ParsedDocument:
                 if any(cells):
                     blocks.append("| " + " | ".join(cells) + " |")
     text = "\n".join(blocks)
+    image_count = _count_zip_files(data, "word/media/", IMAGE_EXTENSIONS)
     meta = {"paragraphs": len(doc.paragraphs), "tables": len(doc.tables)}
-    if doc.inline_shapes:
-        warnings.append(f"이미지 {len(doc.inline_shapes)}개는 텍스트로 읽지 않았습니다.")
+    if not image_count and doc.inline_shapes:
+        image_count = len(doc.inline_shapes)
+    if image_count:
+        warnings.append(
+            f"그림 {image_count}장은 글자로 읽지 않았습니다. 그림 속 표기는 2단계에서 직접 보완할 수 있습니다."
+        )
     if not text.strip():
         raise ParseError("docx에서 텍스트를 찾지 못했습니다. 내용이 이미지로만 들어 있지 않은지 확인해 주세요.")
     return ParsedDocument(filename=filename, kind="docx", text=_normalize(text),
-                          warnings=warnings, meta=meta)
+                          warnings=warnings, image_count=image_count, meta=meta)
 
 
 def _headingize(text: str, style: str) -> str:
@@ -251,12 +300,17 @@ def _parse_hwpx(filename: str, data: bytes) -> ParsedDocument:
     text = "\n".join(line for line in lines if line.strip())
     meta = {"sections": len(sections)}
     names = zf.namelist()
-    if any(n.startswith("BinData/") for n in names):
-        warnings.append("hwpx에 포함된 이미지·개체는 텍스트로 읽지 않았습니다.")
+    image_count = _count_zip_files(data, "BinData/", IMAGE_EXTENSIONS)
+    if image_count:
+        warnings.append(
+            f"그림 {image_count}장은 글자로 읽지 않았습니다. 그림 속 표기는 2단계에서 직접 보완할 수 있습니다."
+        )
+    elif any(name.startswith("BinData/") for name in names):
+        warnings.append("hwpx에 포함된 개체는 텍스트로 읽지 않았습니다.")
     if not text.strip():
         raise ParseError("hwpx에서 텍스트를 찾지 못했습니다. 내용이 표·이미지로만 되어 있는지 확인해 주세요.")
     return ParsedDocument(filename=filename, kind="hwpx", text=_normalize(text),
-                          warnings=warnings, meta=meta)
+                          warnings=warnings, image_count=image_count, meta=meta)
 
 
 def _hwpx_walk(root) -> list:

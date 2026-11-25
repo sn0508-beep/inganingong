@@ -58,6 +58,9 @@ class LLMClient:
         if self.is_demo:
             return False
         if self.provider == "openai":
+            # 사내 AI 게이트웨이가 키 없이 열려 있는 경우가 있어 base_url로도 판단한다.
+            if self.config.get("allow_no_key") and self.config.get("base_url"):
+                return True
             return bool(self.config.get("api_key"))
         return True  # ollama: 로컬 서버가 떠 있는지는 호출해 봐야 안다
 

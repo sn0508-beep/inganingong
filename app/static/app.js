@@ -6,7 +6,7 @@ const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 const state = {
   step: 1,
   text: "",
-  source: null,          // {filename, kind, warnings, ...}
+  source: null,          // {filename, kind, warnings, image_count, ...}
   answers: {},           // qid -> {text, skipped}
   analysis: null,
   mask: true,
@@ -17,6 +17,11 @@ const state = {
   exportDoc: null,
   focusDimension: null,
   questionFilter: "all",
+  aiMode: window.__AI_DEFAULT__ || "offline_rules",
+  aiCheck: null,
+  aiEndpoint: "",
+  aiEndpointOpen: false,
+  imageNote: "",
 };
 
 const STEP_LABELS = ["시작", "빈틈 점검", "약관·규정 근거", "내보내기"];
@@ -59,6 +64,197 @@ async function api(path, options = {}) {
   if (!response.ok) throw new Error(data.error || `요청 실패 (${response.status})`);
   return data;
 }
+
+/* ------------------------------------------------------------------ */
+/* AI 연결 환경                                                        */
+/* ------------------------------------------------------------------ */
+
+const AI_MODES = window.__AI_MODES__ || [];
+
+function currentMode() {
+  return AI_MODES.find((mode) => mode.key === state.aiMode)
+    || AI_MODES[AI_MODES.length - 1]
+    || { key: "offline_rules", label: "AI 미연결", needs: "none", reads_images: false };
+}
+
+function syncModeControls() {
+  $$('input[name="ai-mode"]').forEach((input) => { input.checked = input.value === state.aiMode; });
+  $$(".ai-option").forEach((label) => {
+    label.classList.toggle("is-selected", label.querySelector("input")?.value === state.aiMode);
+  });
+}
+
+function setAiStatus(kind, text) {
+  const badge = $("#ai-mode-status");
+  if (!badge) return;
+  badge.className = `ai-status is-${kind}`;
+  $("#ai-mode-status-text").textContent = text;
+}
+
+function renderAiDetail() {
+  const box = $("#ai-mode-detail");
+  if (!box) return;
+  const mode = currentMode();
+  const endpoint = state.aiCheck?.ok && state.aiCheck.endpoint ? state.aiCheck.endpoint : "";
+  box.innerHTML = `<b>${esc(mode.summary || "")}</b><span>${esc(mode.privacy || "")}</span>`
+    + (endpoint ? `<span title="${esc(endpoint)}">· ${esc(endpoint)}</span>` : "");
+}
+
+function updateModeBadge() {
+  const badge = $("#mode-badge");
+  if (!badge) return;
+  const mode = currentMode();
+  $("#mode-label").textContent = mode.label || "AI 미연결";
+  badge.title = `${mode.label || ""} · ${mode.summary || ""}`;
+  badge.classList.toggle("is-off", state.aiMode === "offline_rules");
+  badge.classList.toggle("is-fail", !!state.aiCheck && !state.aiCheck.ok);
+}
+
+function selectAiMode(key, { check = true, endpoint = null } = {}) {
+  if (!AI_MODES.some((mode) => mode.key === key)) return;
+  state.aiMode = key;
+  state.aiCheck = null;
+  syncModeControls();
+  renderAiDetail();
+  updateModeBadge();
+  updatePrivacyNote(state.maskReport);
+  renderImageNotice();
+  if (check) runAiCheck(endpoint);
+}
+
+let aiCheckToken = 0;
+
+async function runAiCheck(endpoint) {
+  const mode = currentMode();
+  if (!mode.key) return;
+  const token = ++aiCheckToken;
+
+  if (mode.needs === "none") {
+    state.aiCheck = { mode: mode.key, ok: true, status: "ready",
+      message: "AI 없이 기본 규칙 점검으로 진행합니다." };
+    setAiStatus("off", "AI 미연결 · 규칙 점검");
+    renderAiNotice(null);
+    renderAiDetail();
+    updateModeBadge();
+    return;
+  }
+
+  setAiStatus("check", "연결 확인 중…");
+  try {
+    const data = await api("/api/ai/check", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mode: mode.key, endpoint: endpoint || undefined }),
+    });
+    if (token !== aiCheckToken) return;
+    state.aiCheck = data;
+    if (data.ok) {
+      setAiStatus("on", "연결됨");
+      renderAiNotice(null);
+      toast(data.message || "AI 연결을 확인했습니다");
+    } else {
+      setAiStatus("fail", "연결 안 됨");
+      renderAiNotice(data);
+    }
+  } catch (error) {
+    if (token !== aiCheckToken) return;
+    state.aiCheck = { ok: false, message: "연동할 수 있는 AI를 찾지 못하였어요.", reason: error.message };
+    setAiStatus("fail", "연결 안 됨");
+    renderAiNotice(state.aiCheck);
+  }
+  renderAiDetail();
+  updateModeBadge();
+  updatePrivacyNote(state.maskReport);
+  renderImageNotice();
+}
+
+function renderAiNotice(data) {
+  const box = $("#ai-notice");
+  if (!box) return;
+  if (!data) {
+    box.hidden = true;
+    box.innerHTML = "";
+    return;
+  }
+  const mode = currentMode();
+  const endpointValue = state.aiEndpoint || "";
+  const showEndpoint = mode.needs === "internal" && (state.aiEndpointOpen || !!endpointValue);
+  box.hidden = false;
+  box.innerHTML = `
+    <div class="ai-notice" role="status">
+      <div class="ai-notice-head">
+        <span class="ai-notice-mark">!</span>
+        <div>
+          <strong>${esc(data.message || "연동할 수 있는 AI를 찾지 못하였어요.")}</strong>
+          ${data.reason ? `<p class="muted small">${esc(data.reason)}</p>` : ""}
+        </div>
+      </div>
+      ${mode.external ? `<p class="ai-notice-privacy">${esc(mode.privacy || "")}</p>` : ""}
+      <div class="ai-notice-actions">
+        <button type="button" class="btn ghost" data-ai-action="retry">${esc(mode.retry_label || "다시 연결하기")}</button>
+        ${mode.key !== "external_masked" ? `<button type="button" class="btn ghost" data-ai-action="external">외부 AI 연동으로 진행하기</button>` : ""}
+        <button type="button" class="btn" data-ai-action="offline">AI 없이 기본 점검으로 계속하기</button>
+      </div>
+      ${mode.needs === "internal" ? `
+      <div class="ai-endpoint-row" ${showEndpoint ? "" : "hidden"}>
+        <label class="field-label" for="ai-endpoint">사내 AI 주소</label>
+        <div class="endpoint-line">
+          <input id="ai-endpoint" type="text" inputmode="url" placeholder="http://ai.internal/v1" value="${esc(endpointValue)}" />
+          <button type="button" class="btn ghost" data-ai-action="test">연결 확인</button>
+        </div>
+        <p class="muted small">관리자에게 받은 주소를 넣고 연결을 확인하면 그 주소로 점검을 시도합니다. 주소를 모르면 'AI 없이 기본 점검'으로 진행하세요.</p>
+      </div>` : ""}
+    </div>`;
+
+  const input = $("#ai-endpoint");
+  if (input) {
+    input.addEventListener("input", () => { state.aiEndpoint = input.value; });
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        runAiCheck(input.value.trim());
+      }
+    });
+  }
+}
+
+$("#ai-notice").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-ai-action]");
+  if (!button) return;
+  const action = button.dataset.aiAction;
+  const input = $("#ai-endpoint");
+
+  if (action === "offline") {
+    selectAiMode("offline_rules");
+    toast("AI 없이 기본 점검으로 진행합니다");
+    return;
+  }
+  if (action === "external") {
+    state.aiEndpointOpen = false;
+    selectAiMode("external_masked");
+    toast("개인정보를 가린 사본만 외부로 전송됩니다");
+    return;
+  }
+  if (action === "retry") {
+    // 주소 입력이 닫혀 있으면 먼저 열고 포커스를 준다. 다시 누르면 그 주소로 재시도한다.
+    if (input && !state.aiEndpointOpen && !state.aiEndpoint) {
+      state.aiEndpointOpen = true;
+      renderAiNotice(state.aiCheck || { message: "연동할 수 있는 AI를 찾지 못하였어요.", reason: "" });
+      $("#ai-endpoint")?.focus();
+      return;
+    }
+    runAiCheck(input ? input.value.trim() : undefined);
+    return;
+  }
+  if (action === "test") runAiCheck(input ? input.value.trim() : undefined);
+});
+
+$$('input[name="ai-mode"]').forEach((input) => {
+  input.addEventListener("change", () => {
+    state.aiEndpointOpen = false;
+    selectAiMode(input.value);
+  });
+});
 
 /* ------------------------------------------------------------------ */
 /* 단계 이동                                                           */
@@ -116,7 +312,7 @@ const refreshMaskPreview = debounce(async () => {
     const data = await api("/api/mask", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: state.text, mask: state.mask }),
+      body: JSON.stringify({ text: state.text, mask: state.mask, ai_mode: state.aiMode }),
     });
     state.maskReport = data;
     renderMaskReport(data);
@@ -151,19 +347,31 @@ function renderMaskReport(data) {
 
 function updatePrivacyNote(data) {
   const note = $("#privacy-note");
-  if (!data) { note.textContent = "외부 전송 없음"; return; }
-  if (!data.llm_active) {
+  if (!note) return;
+  const mode = currentMode();
+  if (!mode.key || mode.key === "offline_rules") {
     note.textContent = "입력한 내용은 외부로 전송되지 않습니다";
-  } else {
-    note.textContent = data.masked_count ? `개인정보 ${data.masked_count}건 가림 후 전송` : "가림 후 전송";
+    return;
   }
+  if (mode.external) {
+    if (!state.mask) {
+      note.textContent = "가림을 끈 상태 · 원문이 전송됩니다";
+      return;
+    }
+    const count = data?.masked_count ?? state.maskReport?.masked_count ?? 0;
+    note.textContent = count ? `개인정보 ${count}건 가림 후 전송` : "가림 후 전송";
+    return;
+  }
+  note.textContent = "사내망 안에서만 처리";
 }
 
 function setText(text, meta = {}) {
   draftInput.value = text;
   state.text = text;
   state.source = meta;
+  state.imageNote = "";
   $("#btn-next").disabled = !canGoNext();
+  renderImageNotice();
   refreshMaskPreview();
 }
 
@@ -202,9 +410,10 @@ async function uploadFile(file) {
   try {
     const data = await api("/api/parse", { method: "POST", body: form });
     setText(data.text, data);
-    status.innerHTML = `<strong>${esc(data.filename)}</strong> · ${esc(kindLabel(data.kind))} · ${data.char_count.toLocaleString()}자 · ${data.line_count.toLocaleString()}줄`;
+    const images = data.image_count ? ` · 그림 ${data.image_count}장` : "";
+    status.innerHTML = `<strong>${esc(data.filename)}</strong> · ${esc(kindLabel(data.kind))} · ${data.char_count.toLocaleString()}자 · ${data.line_count.toLocaleString()}줄${images}`;
     warnings.innerHTML = (data.warnings || []).map((w) => `<li>${esc(w)}</li>`).join("");
-    toast("초안을 불러왔습니다");
+    toast(data.image_count ? `초안을 불러왔습니다 · 그림 ${data.image_count}장 감지` : "초안을 불러왔습니다");
   } catch (error) {
     status.textContent = "";
     warnings.innerHTML = `<li>${esc(error.message)}</li>`;
@@ -213,6 +422,58 @@ async function uploadFile(file) {
 
 function kindLabel(kind) {
   return { pdf: "PDF", docx: "워드", hwpx: "한글(hwpx)", hwp: "한글(hwp)", text: "텍스트" }[kind] || kind;
+}
+
+/* ------------------------------------------------------------------ */
+/* 그림 감지 안내 (2단계)                                              */
+/* ------------------------------------------------------------------ */
+
+function sourceImageCount() {
+  return Number(state.source?.image_count || 0);
+}
+
+function renderImageNotice() {
+  const box = $("#image-notice");
+  if (!box) return;
+  const count = sourceImageCount();
+  if (!count) {
+    box.hidden = true;
+    box.innerHTML = "";
+    return;
+  }
+  box.hidden = false;
+  const mode = currentMode();
+
+  if (mode.reads_images) {
+    box.innerHTML = `<div class="image-badge">
+      <span class="image-badge-mark">그림 감지</span>
+      <span>그림 ${count}장 감지됨 — AI가 그림 속 표기까지 함께 점검하는 모드예요.</span>
+    </div>`;
+    return;
+  }
+
+  box.innerHTML = `<div class="image-card">
+    <div class="image-card-head">
+      <span class="image-chip">그림 ${count}장</span>
+      <strong>그림 속 내용은 직접 한 줄로 보완해 주세요</strong>
+    </div>
+    <p class="image-card-text">문서에서 그림 ${count}장이 감지되었어요. 현재 모드에서는 그림 속 표기·글자를 읽을 수 없으니, 그림에 표시된 핵심 내용을 아래에 간단히 적어 주세요.</p>
+    <textarea id="image-note" rows="3" placeholder="예) 3쪽 조직도 — 계약팀 3명 · 요금팀 5명 / 5쪽 화면 캡처 — 신청 메뉴는 [고객지원 &gt; 계약변경]">${esc(state.imageNote)}</textarea>
+    <div class="image-card-foot">
+      <span class="muted small">적은 내용은 4단계 문서에 '그림 속 내용 보완'으로 함께 들어갑니다.</span>
+      <span class="saved" id="image-note-saved"></span>
+    </div>
+  </div>`;
+
+  const note = $("#image-note");
+  note.addEventListener("input", () => {
+    state.imageNote = note.value;
+    const saved = $("#image-note-saved");
+    saved.textContent = "저장됨";
+    clearTimeout(state.imageSavedTimer);
+    state.imageSavedTimer = setTimeout(() => { saved.textContent = ""; }, 1400);
+  });
+  autosize(note);
 }
 
 /* 샘플·템플릿 */
@@ -276,14 +537,13 @@ async function runAnalysis({ silent = false } = {}) {
     const data = await api("/api/analyze", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: state.text, answers: state.answers, mask: state.mask }),
+      body: JSON.stringify({ text: state.text, answers: state.answers, mask: state.mask, ai_mode: state.aiMode }),
     });
     state.analysis = data;
     renderSummary(data);
     renderCoverage(data);
     renderQuestions();
-    updatePrivacyNote({ llm_active: !data.llm || data.llm.provider !== "demo",
-                        masked_count: data.masking?.report?.total || 0 });
+    updatePrivacyNote({ masked_count: data.masking?.report?.total || 0 });
   } catch (error) {
     list.innerHTML = `<div class="empty-state">${esc(error.message)}</div>`;
   }
@@ -440,7 +700,7 @@ async function refreshCoverageOnly() {
     const data = await api("/api/analyze", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: state.text, answers: state.answers, mask: state.mask }),
+      body: JSON.stringify({ text: state.text, answers: state.answers, mask: state.mask, ai_mode: state.aiMode }),
     });
     const previous = state.analysis;
     state.analysis = data;
@@ -663,6 +923,17 @@ function prepareExportStep() {
   } else {
     box.innerHTML = "";
   }
+
+  const imageCount = sourceImageCount();
+  if (imageCount > 0) {
+    const note = state.imageNote.trim();
+    box.innerHTML += `<div class="box" style="margin-top:8px"><b>그림 ${imageCount}장 감지됨</b><br>${
+      note
+        ? "그림 속 내용 보완이 문서에 함께 들어갑니다."
+        : "그림 속 표기·글자는 아직 비어 있습니다. 2단계에서 간단히 적어 두면 문서에 함께 들어갑니다."
+    } <button class="link-btn" id="back-to-images">2단계로 돌아가 적기</button></div>`;
+    $("#back-to-images").addEventListener("click", () => setStep(2));
+  }
 }
 
 $("#btn-export").addEventListener("click", async () => {
@@ -678,6 +949,8 @@ $("#btn-export").addEventListener("click", async () => {
     text: state.text,
     analysis: state.analysis || {},
     terms: ($("#include-terms").checked && state.terms) ? state.terms : null,
+    image_note: state.imageNote.trim(),
+    image_count: sourceImageCount(),
   };
   try {
     const data = await api("/api/export", {
@@ -782,10 +1055,14 @@ function mdToHtml(markdown) {
 /* ------------------------------------------------------------------ */
 
 (async function init() {
-  const llm = window.__LLM__ || {};
-  $("#mode-label").textContent = llm.label || "데모 모드";
-  $("#privacy-note").textContent = llm.provider === "demo" ? "입력한 내용은 외부로 전송되지 않습니다" : "개인정보 가림 후 전송";
-  $("#mode-badge").title = `${llm.label || ""} · ${llm.detail || ""}`;
+  const mode = currentMode();
+  if (mode.key) state.aiMode = mode.key;
+  syncModeControls();
+  renderAiDetail();
+  updateModeBadge();
+  updatePrivacyNote(null);
+  renderImageNotice();
   await loadRegulations();
   setStep(1);
+  runAiCheck();
 })();

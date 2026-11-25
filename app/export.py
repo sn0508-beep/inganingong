@@ -82,7 +82,8 @@ def _dimension_of(line: str) -> tuple:
     return "", 0
 
 
-def build(meta: dict, draft: str, analysis: dict, terms: dict | None = None) -> tuple:
+def build(meta: dict, draft: str, analysis: dict, terms: dict | None = None,
+          image_note: str = "", image_count: int = 0) -> tuple:
     """(마크다운, 일반텍스트)를 돌려준다."""
     meta = meta or {}
     questions = analysis.get("questions", [])
@@ -132,6 +133,20 @@ def build(meta: dict, draft: str, analysis: dict, terms: dict | None = None) -> 
     stats = analysis.get("stats", {})
     md.append(f"- 질문 {stats.get('total', 0)}개 중 답변 {stats.get('answered', 0)}개, 건너뜀 {stats.get('skipped', 0)}개, 미답변 {stats.get('unanswered', 0)}개")
     md.append("")
+
+    image_note = (image_note or "").strip()
+    if image_count or image_note:
+        md.append("## 그림 속 내용 보완")
+        md.append("")
+        if image_count:
+            md.append(f"- 문서에서 그림 {image_count}장이 감지되었습니다.")
+        if image_note:
+            md.append("- 그림 속 표기·글자는 자동으로 읽지 않았고, 인계자가 확인해 아래와 같이 적었습니다.")
+            md.append("")
+            md.append(image_note)
+        else:
+            md.append("- 그림 속 내용은 아직 보완되지 않았습니다. 후임자가 직접 확인해야 합니다.")
+        md.append("")
 
     for index, dim in enumerate(DIMENSIONS, start=1):
         md.append(f"## {index}. {dim.label}")

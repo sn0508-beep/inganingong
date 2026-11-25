@@ -39,6 +39,29 @@
 <main>
   <!-- ============================ 1단계 ============================ -->
   <section class="panel is-active" id="panel-1">
+    <section class="ai-mode" id="ai-mode" aria-labelledby="ai-mode-title">
+      <div class="ai-mode-head">
+        <div class="ai-mode-title">
+          <strong id="ai-mode-title">AI 연결 환경</strong>
+          <span class="muted small">이 환경에서 AI를 어디까지 쓸지 고릅니다. 나중에 바꿔도 됩니다.</span>
+        </div>
+        <span class="ai-status is-check" id="ai-mode-status">
+          <span class="dot"></span><span id="ai-mode-status-text">연결 확인 중…</span>
+        </span>
+      </div>
+      <div class="ai-mode-options" role="radiogroup" aria-label="AI 연결 환경">
+        {% for mode in ai_mode_list %}
+        <label class="ai-option" title="{{ mode.label }}">
+          <input type="radio" name="ai-mode" value="{{ mode.key }}" {% if mode.key == ai_default %}checked{% endif %} />
+          <span class="ai-option-name">{{ mode.name }}</span>
+          <span class="ai-option-cap">{{ mode.capability }}</span>
+        </label>
+        {% endfor %}
+      </div>
+      <div class="ai-mode-detail" id="ai-mode-detail"></div>
+      <div class="ai-notice-wrap" id="ai-notice" hidden></div>
+    </section>
+
     <div class="grid grid-2">
       <div class="card">
         <div class="card-head">
@@ -128,6 +151,7 @@
 
   <!-- ============================ 2단계 ============================ -->
   <section class="panel" id="panel-2">
+    <div class="image-notice-wrap" id="image-notice" hidden></div>
     <div class="summary-strip" id="analysis-summary"></div>
     <div class="grid grid-side">
       <aside class="card">
@@ -228,6 +252,8 @@
 
 <script>
   window.__LLM__ = {{ llm | tojson }};
+  window.__AI_MODES__ = {{ ai_mode_list | tojson }};
+  window.__AI_DEFAULT__ = {{ ai_default | tojson }};
   window.__CLIPBOARD_NOTICE__ = "복사되었습니다";
 </script>
 <script src="{{ url_for('static', filename='app.js') }}"></script>

@@ -13,7 +13,7 @@ from pathlib import Path
 
 from flask import Flask, jsonify, render_template, request, send_file
 
-from . import export, gap, masking, terms
+from . import ai_modes, export, gap, masking, terms
 from .checklist import DIMENSIONS
 from .content import SAMPLE_DRAFT, SAMPLE_NOTICE, TEMPLATE_TEXT
 from .llm import LLMClient
@@ -70,6 +70,8 @@ def create_app() -> Flask:
         return render_template(
             "index.html",
             llm=LLMClient().describe(),
+            ai_mode_list=ai_modes.mode_list(),
+            ai_default=ai_modes.default_key(),
             checklist=[
                 {
                     "key": d.key, "label": d.label, "summary": d.summary,
@@ -94,7 +96,32 @@ def create_app() -> Flask:
                 "regulations": regulation_list(),
             },
             "template_available": True,
+            "ai": {
+                "modes": ai_modes.mode_list(),
+                "default": ai_modes.default_key(),
+                "notice": ai_modes.UNAVAILABLE_NOTICE,
+            },
         })
+
+    # ------------------------------------------------------------------
+    # AI 연결 모드 / 연결 확인
+    # ------------------------------------------------------------------
+    @app.get("/api/ai/modes")
+    def ai_modes_index():
+        return jsonify({
+            "modes": ai_modes.mode_list(),
+            "default": ai_modes.default_key(),
+            "notice": ai_modes.UNAVAILABLE_NOTICE,
+        })
+
+    @app.post("/api/ai/check")
+    def ai_connection_check():
+        payload = request.get_json(silent=True) or {}
+        mode = (payload.get("mode") or ai_modes.default_key()).strip()
+        endpoint = payload.get("endpoint")
+        if endpoint is not None:
+            endpoint = str(endpoint)
+        return jsonify(ai_modes.check(mode, endpoint=endpoint))
 
     @app.get("/api/template")
     def template():
@@ -156,11 +183,12 @@ def create_app() -> Flask:
         text = payload.get("text") or ""
         masked = masking.mask_text(text)
         enabled = bool(payload.get("mask", True))
+        mode = (payload.get("ai_mode") or ai_modes.default_key()).strip()
         return jsonify({
             "report": masking.mask_report(masked),
             "preview": (masked.text if enabled else text)[:600],
             "masked_count": masked.total,
-            "llm_active": not LLMClient().is_demo,
+            "llm_active": ai_modes.config_for(mode).get("provider") != "demo",
         })
 
     @app.post("/api/analyze")
@@ -171,14 +199,18 @@ def create_app() -> Flask:
             return jsonify({"error": "분석할 내용이 너무 짧습니다. 초안을 20자 이상 입력해 주세요."}), 400
         answers = payload.get("answers") or {}
         mask_enabled = bool(payload.get("mask", True))
+        mode = (payload.get("ai_mode") or ai_modes.default_key()).strip()
+        if mode not in ai_modes.MODE_MAP:
+            mode = "offline_rules"
 
         masked = masking.mask_text(text)
         result = gap.analyze(
             text,
             answers=answers,
-            llm=LLMClient(),
+            llm=LLMClient(ai_modes.config_for(mode)),
             masked_text=masked.text if mask_enabled else text,
         )
+        result["ai"] = ai_modes.describe(mode)
         result["masking"] = {
             "enabled": mask_enabled,
             "report": masking.mask_report(masked),
@@ -233,9 +265,15 @@ def create_app() -> Flask:
         analysis = payload.get("analysis") or {}
         meta = payload.get("meta") or {}
         terms_result = payload.get("terms") or None
+        image_note = (payload.get("image_note") or "").strip()
+        try:
+            image_count = int(payload.get("image_count") or 0)
+        except (TypeError, ValueError):
+            image_count = 0
         if not text:
             return jsonify({"error": "내보낼 초안이 없습니다."}), 400
-        markdown, plain = export.build(meta, text, analysis, terms_result)
+        markdown, plain = export.build(meta, text, analysis, terms_result,
+                                       image_note=image_note, image_count=image_count)
         return jsonify({
             "markdown": markdown,
             "text": plain,
