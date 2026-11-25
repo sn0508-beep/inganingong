@@ -97,7 +97,8 @@ def main() -> int:
         # 1b) 대안 버튼 두 가지가 실제로 동작하는지
         page.click('[data-ai-action="external"]')
         page.wait_for_selector(".ai-notice-privacy", timeout=15000)
-        page.wait_for_timeout(400)
+        page.wait_for_timeout(600)
+        page.screenshot(path=str(OUT / "05c-ai-external-fallback.png"))
         if page.query_selector('[data-ai-action="external"]'):
             errors.append("fallback: 외부 AI 모드에서 '외부 AI 연동으로 진행하기'가 다시 보입니다")
         page.click('[data-ai-action="offline"]')
