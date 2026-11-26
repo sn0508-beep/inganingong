@@ -192,7 +192,7 @@
 
 ### 5.6 검증 결과 (2026-11-18)
 
-- `python -m pytest tests` → **44 passed, 1 skipped** (skip은 실제 `.hwp` 파일이 있을 때만 도는 검사)
+- `python -m pytest tests` → **45 passed, 1 skipped** (skip은 실제 `.hwp` 파일이 있을 때만 도는 검사)
 - 형식별 추출: `.hwpx` 631자 · `.docx` 684자 · `.pdf` 672자 · `.hwp` 1,599자
 - 내장 기본공급약관: 136쪽 → 조문 107개 색인, 문장 → `제74조의2 · 59쪽` 매칭 확인
 - 화면 4단계 브라우저 자동 순회: 콘솔 오류 0건
