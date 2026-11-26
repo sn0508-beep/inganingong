@@ -119,7 +119,7 @@ docs/
 ├── handover-checklist.md                  # 공개용 체크리스트 (2주차 산출물 겸 리드마그넷)
 └── marketing/
     ├── promotion-strategy.md              # 이 문서
-    ├── channel-copy-drafts.md             # 채널별 게시 문구 초안 (A~E)
+    ├── channel-copy-drafts.md             # 채널별 게시 문구 초안 (A~F)
     ├── experiment-log/
     │   ├── _template.md                   # 실험 로그 템플릿 (아래 §6)
     │   ├── index.md                       # 전체 실험 한눈에 보기 (표 한 줄 = 실험 한 건)
