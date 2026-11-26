@@ -3,7 +3,7 @@
 > **후임자의 질문으로 인수인계서의 빈틈을 채우는 AI 도구**
 > 한양대학교 「인간-인공지능협업제품서비스설계」 팀 프로젝트 · 팀원 4명 · 5주
 
-**현재 상태: 웹 프로토타입 v0.1 동작 (2026-11-25 기준)**
+**현재 상태: 웹 프로토타입 v0.1 동작 (2026-11-26 기준)**
 
 `app/`에 4단계 웹 프로토타입이 있습니다. 초안을 올리면(또는 표준 틀에서 시작하면) 빈틈을 점검해 후임자 관점 질문을 던지고, 공개 약관의 근거 조항을 조문 번호·쪽수와 함께 보여 준 뒤, 정리된 인수인계서와 "아직 답하지 못한 질문 목록"으로 내보냅니다. 실행 방법과 검증 결과는 [9. 웹 프로토타입](#9-웹-프로토타입-v01--2026-11-18)과 [`docs/prototype-v0.1.md`](docs/prototype-v0.1.md)에 정리했습니다. 이 버전을 만들며 정한 내용과 11/18 회의 기록은 [`planning/meetings/261118-meeting-summary.md`](planning/meetings/261118-meeting-summary.md)에, 11/25 회의의 결정(인계자 우선 구조·범위 축소·역할·일정·홍보)과 같은 날 더한 AI 연결 환경 선택·문서 그림 감지·보완 흐름은 [`planning/meetings/261125-meeting-summary.md`](planning/meetings/261125-meeting-summary.md)에 있습니다.
 
@@ -62,7 +62,7 @@
 
 | 이름 | GitHub | 역할·기여 | 저장소에 남긴 기록 |
 |---|---|---|---|
-| 이시내 | [@sn0508-beep](https://github.com/sn0508-beep) | 저장소 개설·운영 총괄, 문서 구조화, 회의 요약, 웹 프로토타입(v0.1) 설계·구현 주도, 11/25 AI 환경·그림 감지 UX 설계 및 프로토타입 반영, 11/25 회의에서 인계자 우선 구조로 범위 정리 | `README.md`, `planning/meetings/261111-meeting-summary.md`, `planning/meetings/261118-meeting-summary.md`, `planning/meetings/261125-meeting-summary.md`, `docs/prototype-v0.1.md`, `app/`, `idea-exploration-LEESINE.md`, `idea-exploration-LEESINE2.md` |
+| 이시내 | [@sn0508-beep](https://github.com/sn0508-beep) | 저장소 개설·운영 총괄, 문서 구조화, 회의 요약, 웹 프로토타입(v0.1) 설계·구현 주도, 11/25 AI 환경·그림 감지 UX 설계 및 프로토타입 반영, 11/25 회의에서 인계자 우선 구조로 범위 정리 | `README.md`, `planning/meetings/261111-meeting-summary.md`, `planning/meetings/261118-meeting-summary.md`, `planning/meetings/261125-meeting-summary.md`, `docs/prototype-v0.1.md`, `app/`, `idea-exploration-LEESINE.md`, `idea-exploration-LEESINE2.md`, `idea-exploration-LEESINE3.md`(개인 아이디어 메모) |
 | 최선주 | [@tteokbokkiyumyum](https://github.com/tteokbokkiyumyum) | 아이디어 탐색, 홍보 전략·채널별 게시 문구·인수인계서 품질 체크리스트 초안 작성 | `idea-exploration-CHOISUNJU.md`, `planning/promote/` 3건 |
 | 오홍걸 | [@zhdzm123](https://github.com/zhdzm123) | 아이디어 탐색, 11/11 회의 전사본 정리 | `idea-exploration-Hong.md`, `261111-record.md`(회의 전사본) |
 | 변지훈 | [@drum101014-dev](https://github.com/drum101014-dev) | 아이디어 탐색(현장 노하우 매뉴얼화) | `idea-exploration-BYEON.md` |
@@ -128,6 +128,7 @@ inganingong/
     │   ├── 261111-record.md               # 2026-11-11 팀 회의 전사본 (Zoom, 19분 38초)
     │   ├── idea-exploration-LEESINE.md    # 이시내 — 아이디어 후보 정리와 검토 기준
     │   ├── idea-exploration-LEESINE2.md   # 이시내 — AI와의 토론 로그 (2026-11-08 ~ 11-09)
+    │   ├── idea-exploration-LEESINE3.md   # 이시내 — 개인 아이디어 메모 (상황 맞춤형 사람 목소리 안전 경고, 과제 범위 밖)
     │   ├── idea-exploration-CHOISUNJU.md  # 최선주 — 회의록 실행 추적 → 인수인계 인터뷰어
     │   ├── idea-exploration-Hong.md       # 오홍걸 — 업무 자동화 후보 탐색과 판단 기준
     │   └── idea-exploration-BYEON.md      # 변지훈 — 현장 노하우 매뉴얼화(Field-Tail)
@@ -137,13 +138,13 @@ inganingong/
     │   └── 261125-meeting-summary.md      # 2026-11-25 회의 요약 + 같은 날 설계·보완 (인계자 우선 구조·Q&A 범위·역할·일정·홍보·AI 연결 4단계·그림 감지)
     └── promote/
         ├── promotion-strategy.md          # 홍보 전략 초안 (2026-11-18, 팀 검토 전)
-        ├── channel-copy-drafts.md         # 채널별 게시 문구 초안 (A~E)
+        ├── channel-copy-drafts.md         # 채널별 게시 문구 초안 (A~F)
         └── handover-checklist-draft.md    # 인수인계서 품질 체크리스트 초안 (6개 영역 46개 항목)
 ```
 
 위 문서 6건은 2026-11-18에 파일명에 `.md` 확장자를 붙여 GitHub에서 마크다운으로 렌더링되도록 했습니다(내용은 수정하지 않았습니다). 앞으로 결정 기록·기술 검증 문서는 `docs/`로 모아 정리할 계획입니다.
 
-`planning/meetings/`는 회의 요약과 날짜별 설계·진행 정리를 날짜 순으로 모으는 폴더입니다. 회의는 전사본을 원문으로 두고 결정과 근거 발언을 시간 표시와 함께 정리하고, 같은 날 진행한 설계·구현 기록은 그 회의 요약에 이어 붙여 한 파일로 남깁니다. 회의 없이 진행한 설계·보완은 별도 파일로 남깁니다. 첫 문서는 `261111-meeting-summary.md`, 두 번째는 `261118-meeting-summary.md`, 세 번째는 `261125-meeting-summary.md`입니다. 11/25에는 회의 없이 설계만 따로 정리한 문서를 먼저 두었는데, 같은 날 회의 요약과 다루는 내용이 겹쳐 회의 요약 한 파일로 합쳤습니다.
+`planning/meetings/`는 회의 요약과 날짜별 설계·진행 정리를 날짜 순으로 모으는 폴더입니다. 회의는 전사본을 원문으로 두고 결정과 근거 발언을 시간 표시와 함께 정리하고, 같은 날 진행한 설계·구현 기록은 그 회의 요약에 이어 붙여 한 파일로 남깁니다. 회의가 없는 날 진행한 설계·보완은 별도 파일로 남깁니다. 지금은 `261111-meeting-summary.md`, `261118-meeting-summary.md`, `261125-meeting-summary.md` 세 파일이 있습니다. 11/25에는 설계 보완 문서를 따로 두었다가 같은 날 회의 요약과 다루는 내용이 겹쳐 회의 요약 한 파일로 합쳤고, 이후 같은 날 기록은 처음부터 한 파일로 정리합니다.
 
 ---
 
