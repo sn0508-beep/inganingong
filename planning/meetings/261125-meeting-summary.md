@@ -247,7 +247,7 @@ AI 연결은 결국 환경 몫이라, 설정이 없거나 주소가 틀리거나
 - 브랜치: `feature/web-prototype` (11/18 `f6f9e80` 이후). 프로토타입 코드는 11/18과 같은 원칙으로 `main`에는 병합하지 않았습니다.
 - 커밋: `0702b08` (AI 연결 환경 선택·연동 실패 대안 안내·그림 감지), `3393f62` (화면 캡처 도구에 외부 AI 대안 화면 추가)
 - 변경 규모: 12개 파일 — `app/ai_modes.py`(신규), `app/{server,llm,parsers,export}.py`, `app/static/{app.js,app.css}`, `app/templates/index.html`, `docs/prototype-v0.1.md`, `tests/test_ai_modes.py`·`tests/test_image_count.py`(신규), `tools/screenshot_ai.py`(신규)
-- 자동 테스트: `python -m pytest tests` → **67 passed, 1 skipped** (11/18의 44 passed·1 skipped에서 22개 추가. skip은 실제 `.hwp` 파일이 있을 때만 도는 검사)
+- 자동 테스트: `python -m pytest tests` → **67 passed, 1 skipped** (11/18의 45 passed·1 skipped에서 22개 추가. skip은 실제 `.hwp` 파일이 있을 때만 도는 검사)
   - 모드 4종, 연결 확인(설정 없음 / 주소 없음 / 응답 없음 / 연결 성공), 모드별 AI 호출 차단
   - `image_count` 감지(`.docx`·`.hwpx`·`.pdf` 실제 생성 파일)와 보완 메모의 문서 반영
 - 화면 검증: 헤드리스 브라우저 자동 순회로 **콘솔 오류 0건**. 기존 4단계 흐름 회귀 없음, 신규 흐름(실패 안내 → 외부 AI 대안 → AI 없이 계속 → 주소 입력 후 연결 성공 → 그림 배지 → AI 미연결 모드 보완 카드 → 문서 반영)까지 같은 방식으로 확인
@@ -266,7 +266,7 @@ AI 연결은 결국 환경 몫이라, 설정이 없거나 주소가 틀리거나
 | 최종 발표 준비 | 12/16(수) 오프라인 — GitHub 공유 + 사이트 시연 | 오홍걸 중심 |
 | Q&A 탭 세부 | 인수자 질문과 인계자 답변의 흐름, AI가 답하는 범위 정하기 — v0.1에서는 보류(2026-11-26) | 홍보·설문 피드백 후 결정 |
 | 인계자·인수자 권한 구분 | 화면에서 기능과 권한을 나눠 표시 | 다음 구현에서 |
-| 사내 AI 규격 | 실제 도입 기관의 게이트웨이 규격 확인 — 지금은 OpenAI 호환 `/chat/completions` 규격을 가정 | 미정 |
+| 사내 AI 규격 | 3단계 사내 표준약관 AI 연결은 구현(2026-11-26) — 실제 도입 기관의 게이트웨이 규격 확인이 남음. 지금은 OpenAI 호환 `/chat/completions` 규격을 가정 | 미정 |
 | 남은 기술 과제 | 그림 속 글자 인식(OCR), 스캔 PDF, `.hwp` 서식 복원, 사내 규정 다중 색인 | — |
 
 ## 10. 이 요약에서 다루지 않은 것
