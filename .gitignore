@@ -13,3 +13,4 @@ screenshots/
 # 환경변수(LLM 키 등) — 절대 커밋하지 않습니다
 .env
 .env.*
+!.env.example

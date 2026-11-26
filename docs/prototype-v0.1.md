@@ -52,6 +52,7 @@
   - `openai`: `LLM_BASE_URL`(기본 `https://api.openai.com/v1`), `LLM_MODEL`, `LLM_API_KEY`.
   - `ollama`: `LLM_BASE_URL`(기본 `http://localhost:11434`), `LLM_MODEL`. 사내망·온프레미스 시연용.
 - 핵심 판단(빈틈 탐지·조문 매칭)은 LLM 없이 동작하고, LLM은 질문을 더하는 보조로만 씁니다.
+- **설정 예시 파일**: 사내 AI·외부 AI의 주소와 키를 어디에 넣는지는 저장소 루트의 [`.env.example`](../.env.example)에 항목별 주석으로 정리했습니다. `.env.example`을 `.env`로 복사해 값을 채우고 `set -a; source .env; set +a`로 불러온 뒤 실행하며, 실제 값이 담긴 `.env`는 `.gitignore`로 제외됩니다.
 
 ### 4.1 AI 연결 환경 선택 (2026-11-25 추가)
 
