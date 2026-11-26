@@ -337,6 +337,11 @@ def _sentences(text: str) -> list:
     return sentences
 
 
+def split_sentences(text: str) -> list:
+    """초안을 문장 단위로 나눈다(3단계 사내 표준약관 AI 연결에서도 같은 기준을 쓴다)."""
+    return _sentences(text)
+
+
 def _domain_hits(sentence: str, unit_text: str) -> list:
     """문장에 나온 업무 용어가 조문 본문·제목에 있는지(동의어 포함)."""
     compact_unit = re.sub(r"\s+", "", unit_text)

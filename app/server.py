@@ -13,7 +13,7 @@ from pathlib import Path
 
 from flask import Flask, jsonify, render_template, request, send_file
 
-from . import ai_modes, export, gap, masking, terms
+from . import ai_modes, export, gap, internal_terms, masking, terms
 from .checklist import DIMENSIONS
 from .content import SAMPLE_DRAFT, SAMPLE_NOTICE, TEMPLATE_TEXT
 from .llm import LLMClient
@@ -100,6 +100,11 @@ def create_app() -> Flask:
                 "modes": ai_modes.mode_list(),
                 "default": ai_modes.default_key(),
                 "notice": ai_modes.UNAVAILABLE_NOTICE,
+            },
+            "terms": {
+                "internal": internal_terms.describe(),
+                "notice": internal_terms.UNAVAILABLE_NOTICE,
+                "sources": ["internal", "pdf"],
             },
         })
 
@@ -241,13 +246,68 @@ def create_app() -> Flask:
         UPLOADED[reg_id] = reg
         return jsonify({"regulation": reg.summary()})
 
+    # ------------------------------------------------------------------
+    # 3단계 — 사내 표준약관 AI 연결 (선택) / 규정 PDF (기본·폴백)
+    # ------------------------------------------------------------------
+    @app.get("/api/terms/status")
+    def terms_status():
+        """3단계가 쓸 수 있는 두 경로의 현재 상태. 호출은 하지 않고 설정만 본다."""
+        items = regulation_list()
+        return jsonify({
+            "internal": internal_terms.describe(),
+            "pdf": {
+                "items": items,
+                "default_id": items[0]["id"] if items else "",
+                "label": "규정 PDF 업로드 / 내장 샘플",
+            },
+            "sources": ["internal", "pdf"],
+            "notice": internal_terms.UNAVAILABLE_NOTICE,
+            "disclaimer": terms.DISCLAIMER,
+        })
+
+    @app.post("/api/terms/check")
+    def terms_connection_check():
+        """사내 표준약관 AI 주소의 연결을 확인한다(화면에서 넣은 주소도 여기로)."""
+        payload = request.get_json(silent=True) or {}
+        endpoint = payload.get("endpoint")
+        if endpoint is not None:
+            endpoint = str(endpoint)
+        return jsonify(internal_terms.check(endpoint))
+
     @app.post("/api/terms")
     def match_terms():
         payload = request.get_json(silent=True) or {}
         text = (payload.get("text") or "").strip()
+        source = (payload.get("source") or "pdf").strip()
         reg_id = payload.get("regulation_id") or "kepco"
         if not text:
             return jsonify({"error": "인수인계 초안이 비어 있습니다."}), 400
+
+        if source == "internal":
+            endpoint = payload.get("endpoint")
+            try:
+                result = internal_terms.match(
+                    text,
+                    endpoint_value=(str(endpoint) if endpoint is not None else None),
+                    mask=bool(payload.get("mask", False)),
+                )
+            except internal_terms.TermsAIError as exc:
+                # 화면은 이 응답을 그대로 받아 '다시 연결 / PDF로 진행' 카드를 띄운다.
+                return jsonify({
+                    "ok": False,
+                    "source": "internal",
+                    "status": exc.status,
+                    "notice": internal_terms.UNAVAILABLE_NOTICE,
+                    "message": internal_terms.UNAVAILABLE_NOTICE,
+                    "reason": exc.reason,
+                    "endpoint": internal_terms.endpoint(),
+                    "retry_label": "사내 표준약관 AI 다시 연결하기",
+                    "fallback_label": "규정 PDF 업로드로 진행하기",
+                })
+            return jsonify(result)
+
+        if source not in ("pdf", ""):
+            return jsonify({"error": "알 수 없는 근거 경로입니다."}), 400
         if reg_id == "kepco":
             reg = builtin_regulation()
         elif reg_id in UPLOADED:
@@ -256,6 +316,8 @@ def create_app() -> Flask:
             return jsonify({"error": "규정을 찾을 수 없습니다. 다시 선택해 주세요."}), 404
         result = terms.match_units(reg, text)
         result["regulation"] = reg.summary()
+        result["source"] = "pdf"
+        result["ok"] = True
         return jsonify(result)
 
     @app.post("/api/export")

@@ -21,6 +21,13 @@ const state = {
   aiCheck: null,
   aiEndpoint: "",
   aiEndpointOpen: false,
+  termsSource: "pdf",       // "pdf" | "internal"
+  termsSourceReady: false,
+  termsInternal: null,      // /api/terms/status 의 internal 설명
+  termsCheck: null,         // /api/terms/check 결과
+  termsEndpoint: "",
+  termsEndpointOpen: false,
+  termsMask: false,
   imageNote: "",
 };
 
@@ -743,25 +750,242 @@ async function loadRegulations() {
   try {
     const data = await api("/api/regulations");
     state.regulations = data.items;
-    const select = $("#regulation-select");
-    select.innerHTML = data.items.map((item) => `
-      <option value="${esc(item.id)}" ${item.id === state.regulationId ? "selected" : ""}>
-        ${esc(item.name)}${item.version_label ? ` (${esc(item.version_label)})` : ""} · 조문 ${item.article_count}개
-      </option>`).join("");
+    renderRegulationOptions();
     renderRegMeta();
   } catch (error) {
     toast(error.message);
   }
 }
 
+function renderRegulationOptions() {
+  const select = $("#regulation-select");
+  if (!select) return;
+  const items = state.regulations || [];
+  if (!items.some((item) => item.id === state.regulationId)) {
+    state.regulationId = items[0]?.id || "kepco";
+  }
+  select.innerHTML = items.map((item) => `
+    <option value="${esc(item.id)}" ${item.id === state.regulationId ? "selected" : ""}>
+      ${esc(item.name)}${item.version_label ? ` (${esc(item.version_label)})` : ""} · 조문 ${item.article_count}개
+    </option>`).join("");
+}
+
+/* 3단계의 두 경로: 사내 표준약관 AI 연결 / 규정 PDF 업로드 */
+
+function setTermsStatus(kind, text) {
+  const badge = $("#terms-status");
+  if (!badge) return;
+  badge.className = `ai-status is-${kind}`;
+  $("#terms-status-text").textContent = text;
+}
+
+function setMatchEmpty(text) {
+  const list = $("#match-list");
+  if (list && !list.querySelector(".match-card")) {
+    list.innerHTML = `<div class="empty-state">${esc(text)}</div>`;
+  }
+}
+
+function syncTermsSourceControls() {
+  $$('input[name="terms-source"]').forEach((input) => { input.checked = input.value === state.termsSource; });
+  $$("#terms-source .ai-option").forEach((label) => {
+    label.classList.toggle("is-selected", label.querySelector("input")?.value === state.termsSource);
+  });
+  $("#terms-pdf-panel").hidden = state.termsSource !== "pdf";
+  $("#terms-internal-panel").hidden = state.termsSource !== "internal";
+}
+
+function renderTermsSourceDetail() {
+  const box = $("#terms-source-detail");
+  if (!box) return;
+  if (state.termsSource === "internal") {
+    const endpoint = state.termsCheck?.endpoint || state.termsInternal?.endpoint || "";
+    box.innerHTML = `<b>사내 표준약관 AI가 초안 문장마다 조문을 찾아 줍니다.</b>`
+      + `<span>사내망 안에서만 처리됩니다.</span>`
+      + (endpoint
+        ? `<span title="${esc(endpoint)}">· ${esc(endpoint)}</span>`
+        : `<span>· 주소 미설정</span>`);
+    return;
+  }
+  box.innerHTML = `<b>올린 규정 PDF(또는 내장 샘플)에서 조문을 직접 찾습니다.</b>`
+    + `<span>파일은 서버 메모리에만 남고 재시작하면 사라집니다.</span>`;
+}
+
+function setTermsSource(source, { check = true } = {}) {
+  if (!["pdf", "internal"].includes(source)) return;
+  state.termsSource = source;
+  state.terms = null;
+  $("#match-list").innerHTML = "";
+  $("#terms-summary").innerHTML = "";
+  syncTermsSourceControls();
+  renderTermsSourceDetail();
+  renderTermsNotice(null);
+  renderRegMeta();
+  if (source === "internal") {
+    setTermsStatus("check", "연결 확인 중…");
+    if (check) runTermsCheck();
+    return;
+  }
+  setTermsStatus("off", "규정 PDF · 바로 사용");
+}
+
+async function loadTermsStatus() {
+  const data = await api("/api/terms/status");
+  state.termsInternal = data.internal || {};
+  if (data.pdf?.items?.length) {
+    state.regulations = data.pdf.items;
+    renderRegulationOptions();
+  }
+  return data;
+}
+
+let termsCheckToken = 0;
+
+async function runTermsCheck(endpoint) {
+  const token = ++termsCheckToken;
+  setTermsStatus("check", "연결 확인 중…");
+  try {
+    const data = await api("/api/terms/check", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ endpoint: endpoint || undefined }),
+    });
+    if (token !== termsCheckToken) return;
+    state.termsCheck = data;
+    if (data.ok) {
+      setTermsStatus("on", "연결됨");
+      renderTermsNotice(null);
+      toast(data.message || "사내 표준약관 AI 연결을 확인했습니다");
+      if (state.text.trim()) runMatch();
+    } else {
+      setTermsStatus("fail", "연결 안 됨");
+      renderTermsNotice(data);
+      setMatchEmpty("사내 표준약관 AI 연결을 확인하면 조항을 찾습니다. 위 카드에서 주소를 넣거나 '규정 PDF 업로드로 진행하기'를 눌러 주세요.");
+    }
+  } catch (error) {
+    if (token !== termsCheckToken) return;
+    state.termsCheck = { ok: false, status: "error", message: "연동할 수 있는 사내 표준약관 AI를 찾지 못하였어요.", reason: error.message };
+    setTermsStatus("fail", "연결 안 됨");
+    renderTermsNotice(state.termsCheck);
+    setMatchEmpty("사내 표준약관 AI 연결을 확인하면 조항을 찾습니다. 위 카드에서 주소를 넣거나 '규정 PDF 업로드로 진행하기'를 눌러 주세요.");
+  }
+  renderTermsSourceDetail();
+  renderRegMeta();
+}
+
+function renderTermsNotice(data) {
+  const box = $("#terms-notice");
+  if (!box) return;
+  if (!data) {
+    box.hidden = true;
+    box.innerHTML = "";
+    return;
+  }
+  const showEndpoint = state.termsEndpointOpen || !!state.termsEndpoint;
+  box.hidden = false;
+  box.innerHTML = `
+    <div class="ai-notice" role="status">
+      <div class="ai-notice-head">
+        <span class="ai-notice-mark">!</span>
+        <div>
+          <strong>${esc(data.message || "연동할 수 있는 사내 표준약관 AI를 찾지 못하였어요.")}</strong>
+          ${data.reason ? `<p class="muted small">${esc(data.reason)}</p>` : ""}
+        </div>
+      </div>
+      <div class="ai-notice-actions">
+        <button type="button" class="btn ghost" data-terms-action="retry">사내 표준약관 AI 다시 연결하기</button>
+        <button type="button" class="btn" data-terms-action="pdf">규정 PDF 업로드로 진행하기</button>
+      </div>
+      <div class="ai-endpoint-row" ${showEndpoint ? "" : "hidden"}>
+        <label class="field-label" for="terms-endpoint">사내 표준약관 AI 주소</label>
+        <div class="endpoint-line">
+          <input id="terms-endpoint" type="text" inputmode="url" placeholder="https://terms.internal/api/search" value="${esc(state.termsEndpoint)}" />
+          <button type="button" class="btn ghost" data-terms-action="test">연결 확인</button>
+        </div>
+        <p class="muted small">관리자에게 받은 조항 검색 API 주소를 넣고 연결을 확인하세요. 주소를 모르면 '규정 PDF 업로드로 진행하기'를 누르면 됩니다.</p>
+      </div>
+    </div>`;
+
+  const input = $("#terms-endpoint");
+  if (input) {
+    input.addEventListener("input", () => { state.termsEndpoint = input.value; });
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        runTermsCheck(input.value.trim());
+      }
+    });
+  }
+}
+
+$("#terms-notice").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-terms-action]");
+  if (!button) return;
+  const action = button.dataset.termsAction;
+  const input = $("#terms-endpoint");
+
+  if (action === "pdf") {
+    state.termsEndpointOpen = false;
+    setTermsSource("pdf");
+    if (state.text.trim()) runMatch();
+    toast("규정 PDF로 조항을 찾습니다");
+    return;
+  }
+  if (action === "retry") {
+    // 주소 입력이 닫혀 있으면 먼저 열고 포커스를 준다. 다시 누르면 그 주소로 재시도한다.
+    if (input && !state.termsEndpointOpen && !state.termsEndpoint) {
+      state.termsEndpointOpen = true;
+      renderTermsNotice(state.termsCheck || { message: "연동할 수 있는 사내 표준약관 AI를 찾지 못하였어요.", reason: "" });
+      $("#terms-endpoint")?.focus();
+      return;
+    }
+    runTermsCheck(input ? input.value.trim() : undefined);
+    return;
+  }
+  if (action === "test") runTermsCheck(input ? input.value.trim() : undefined);
+});
+
+$$('input[name="terms-source"]').forEach((input) => {
+  input.addEventListener("change", () => {
+    state.termsEndpointOpen = false;
+    setTermsSource(input.value);
+    if (input.value === "pdf" && state.text.trim()) runMatch();
+  });
+});
+
+$("#terms-mask").addEventListener("change", (event) => {
+  state.termsMask = event.target.checked;
+  if (state.text.trim()) runMatch();
+});
+
+$("#btn-terms-to-pdf").addEventListener("click", () => {
+  state.termsEndpointOpen = false;
+  setTermsSource("pdf");
+  renderRegMeta();
+  if (state.text.trim()) runMatch();
+  toast("규정 PDF로 조항을 찾습니다");
+});
+
 function currentRegulation() {
   return state.regulations.find((item) => item.id === state.regulationId) || null;
 }
 
 function renderRegMeta() {
+  const box = $("#reg-meta");
+  if (!box) return;
+  if (state.termsSource === "internal") {
+    const endpoint = state.termsCheck?.endpoint || state.termsInternal?.endpoint || "";
+    const connected = !!state.termsCheck?.ok;
+    box.innerHTML = `
+      <span class="kv">경로 <b>사내 표준약관 AI</b></span>
+      <span class="kv">상태 <b>${connected ? "연결됨" : "연결 확인 필요"}</b></span>
+      ${endpoint ? `<span class="kv" title="${esc(endpoint)}">주소 <b>${esc(endpoint)}</b></span>` : `<span class="kv">주소 <b>설정 안 됨</b></span>`}
+      <span class="kv">보내는 곳 <b>사내망</b></span>`;
+    return;
+  }
   const reg = currentRegulation();
   if (!reg) return;
-  $("#reg-meta").innerHTML = `
+  box.innerHTML = `
     <span class="kv">문서 <b>${esc(reg.filename || reg.name)}</b></span>
     <span class="kv">쪽수 <b>${reg.page_count}</b></span>
     <span class="kv">조문 <b>${reg.article_count}</b>개 / 검색단위 <b>${reg.unit_count}</b></span>
@@ -778,20 +1002,36 @@ $("#regulation-select").addEventListener("change", (event) => {
 });
 
 async function ensureTerms() {
-  if (!state.regulations.length) await loadRegulations();
+  if (!state.termsSourceReady) {
+    try {
+      await loadTermsStatus();
+    } catch (error) {
+      toast(error.message);
+    }
+    state.termsSourceReady = true;
+    // 사내 표준약관 AI 주소가 설정된 환경이면 그쪽을 먼저 시도하고, 없으면 PDF 경로로 바로 진행한다.
+    if (state.termsInternal?.configured) {
+      setTermsSource("internal", { check: false });
+      await runTermsCheck();
+      return;
+    }
+    setTermsSource("pdf", { check: false });
+  }
   if (!state.terms) runMatch();
 }
 
 $("#btn-match").addEventListener("click", () => runMatch());
+$("#btn-match-internal").addEventListener("click", () => runMatch());
 
 async function runMatch() {
+  if (state.termsSource === "internal") return runInternalMatch();
   const list = $("#match-list");
   list.innerHTML = `<div class="empty-state">조항을 찾는 중…</div>`;
   try {
     const data = await api("/api/terms", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: state.text, regulation_id: state.regulationId }),
+      body: JSON.stringify({ text: state.text, source: "pdf", regulation_id: state.regulationId }),
     });
     state.terms = data;
     renderTerms(data);
@@ -800,42 +1040,89 @@ async function runMatch() {
   }
 }
 
+async function runInternalMatch() {
+  const list = $("#match-list");
+  if (!state.termsCheck) {
+    await runTermsCheck();
+    return;
+  }
+  if (!state.termsCheck.ok) {
+    renderTermsNotice(state.termsCheck);
+    list.innerHTML = `<div class="empty-state">사내 표준약관 AI 연결을 확인하면 조항을 찾습니다. 위 카드에서 주소를 넣거나 '규정 PDF 업로드로 진행하기'를 눌러 주세요.</div>`;
+    return;
+  }
+  list.innerHTML = `<div class="empty-state">사내 표준약관 AI로 조항을 찾는 중…</div>`;
+  try {
+    const response = await fetch("/api/terms", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: state.text, source: "internal", mask: state.termsMask }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || `요청 실패 (${response.status})`);
+    if (data.ok === false) {
+      state.termsCheck = data;
+      setTermsStatus("fail", "연결 안 됨");
+      renderTermsNotice(data);
+      renderRegMeta();
+      list.innerHTML = `<div class="empty-state">사내 표준약관 AI에서 조항을 받지 못했습니다. 위 카드에서 다시 연결하거나 규정 PDF로 진행해 주세요.</div>`;
+      return;
+    }
+    state.terms = data;
+    renderTerms(data);
+  } catch (error) {
+    list.innerHTML = `<div class="empty-state">${esc(error.message)}</div>`;
+  }
+}
+
 function renderTerms(data) {
+  const isInternal = data.source === "internal";
   const stats = data.stats || {};
   const matched = stats.matched || 0;
   const total = stats.sentences || 0;
+  const whereNote = isInternal ? "사내 AI가 색인한 원문 기준" : "조문 번호·쪽수는 원문 PDF 기준";
   $("#terms-summary").innerHTML = `
     <div class="summary-item">
       <div class="label">근거 후보를 찾은 문장</div>
       <div class="value">${matched}<small>/ ${total}</small></div>
-      <div class="note">나머지는 약관과 직접 관련 없는 업무 문장입니다</div>
+      <div class="note">나머지는 규정과 직접 관련 없는 업무 문장입니다</div>
     </div>
     <div class="summary-item">
       <div class="label">걸린 조문</div>
       <div class="value">${stats.articles || 0}<small>개</small></div>
-      <div class="note">조문 번호·쪽수는 원문 PDF 기준</div>
+      <div class="note">${esc(whereNote)}</div>
     </div>
     <div class="summary-item">
       <div class="label">신뢰도 높음</div>
       <div class="value">${(data.matches || []).filter((m) => m.confidence === "높음").length}<small>건</small></div>
       <div class="note">낮은 후보는 직접 확인이 필요합니다</div>
+    </div>
+    <div class="summary-item">
+      <div class="label">가져온 곳</div>
+      <div class="value" style="font-size:19px">${esc(isInternal ? "사내 표준약관 AI" : "규정 PDF")}</div>
+      <div class="note">${esc(isInternal ? (data.ai?.masked ? "개인정보를 가린 사본을 보냈습니다" : "사내망 안에서만 처리했습니다") : "올린 파일·내장 샘플에서 직접 찾았습니다")}</div>
     </div>`;
 
   const list = $("#match-list");
+  const notices = (data.notices || []).map((note) => `<div class="terms-note">${esc(note)}</div>`).join("");
   if (!data.matches?.length) {
-    list.innerHTML = `<div class="empty-state">초안에서 약관과 연결되는 문장을 찾지 못했습니다. 규정 파일을 바꾸거나 초안에 근거 규정을 함께 적어 보세요.</div>`;
+    list.innerHTML = notices + `<div class="empty-state">${isInternal
+      ? "사내 표준약관 AI가 이 초안에서 근거 후보를 찾지 못했습니다. 질문 범위를 좁히거나 규정 PDF로 한 번 더 확인해 보세요."
+      : "초안에서 약관과 연결되는 문장을 찾지 못했습니다. 규정 파일을 바꾸거나 초안에 근거 규정을 함께 적어 보세요."}</div>`;
     return;
   }
 
-  list.innerHTML = data.matches.map((match) => {
+  list.innerHTML = notices + data.matches.map((match) => {
     const primary = match.primary;
+    const pageLabel = [primary.paragraph, primary.printed_page !== "" && primary.printed_page != null ? `${primary.printed_page}쪽` : ""]
+      .filter(Boolean).join(" ");
     const alternatives = (match.alternatives || []).map((alt) => `
       <div class="alt-row" data-full="${esc(alt.text)}">
         <span class="article-no" style="font-size:13px">${esc(alt.article_no)}</span>
         <span class="article-title" style="font-size:13px">${esc(alt.title)}</span>
-        <span class="loc">${esc(alt.printed_page)}쪽</span>
+        <span class="loc">${alt.printed_page !== "" && alt.printed_page != null ? `${esc(alt.printed_page)}쪽` : esc(alt.location || "")}</span>
         <span class="conf ${esc(alt.confidence)}">${esc(alt.confidence)}</span>
-        <span class="muted small">점수 ${esc(alt.score)}</span>
+        ${alt.score !== "" && alt.score != null ? `<span class="muted small">점수 ${esc(alt.score)}</span>` : ""}
       </div>`).join("");
 
     return `
@@ -845,20 +1132,21 @@ function renderTerms(data) {
           <div class="match-primary">
             <span class="article-no">${esc(primary.article_no)}</span>
             <span class="article-title">${esc(primary.title)}</span>
-            <span class="loc">${esc(primary.paragraph || "")} ${esc(primary.printed_page)}쪽</span>
+            ${pageLabel ? `<span class="loc">${esc(pageLabel)}</span>` : (primary.location ? `<span class="loc">${esc(primary.location)}</span>` : "")}
             ${primary.chapter ? `<span class="loc">${esc(primary.chapter)}</span>` : ""}
             <span class="conf ${esc(primary.confidence)}">신뢰도 ${esc(primary.confidence)}</span>
           </div>
+          ${primary.reason ? `<div class="match-reason"><b>왜 이 조문인가</b>${esc(primary.reason)}</div>` : ""}
           <div class="excerpt">${highlight(primary.excerpt, primary.matched_terms, primary.matched_words)}</div>
-          ${(primary.matched_terms.length || primary.matched_words.length) ? `
+          ${((primary.matched_terms || []).length || (primary.matched_words || []).length) ? `
             <div class="terms-chips">
-              ${primary.matched_terms.map((t) => `<span class="chip">${esc(t)}</span>`).join("")}
-              ${primary.matched_words.filter((w) => !primary.matched_terms.includes(w)).slice(0, 4).map((w) => `<span class="chip weak">${esc(w)}</span>`).join("")}
+              ${(primary.matched_terms || []).map((t) => `<span class="chip">${esc(t)}</span>`).join("")}
+              ${(primary.matched_words || []).filter((w) => !(primary.matched_terms || []).includes(w)).slice(0, 4).map((w) => `<span class="chip weak">${esc(w)}</span>`).join("")}
             </div>` : ""}
           ${alternatives ? `<div class="alts"><div class="alts-title">다른 후보 조문</div>${alternatives}</div>` : ""}
-          <details><summary class="link-btn" style="margin-top:10px">조문 원문 보기</summary>
+          ${primary.text ? `<details><summary class="link-btn" style="margin-top:10px">조문 원문 보기</summary>
             <div class="full-text">${esc(primary.text)}</div>
-          </details>
+          </details>` : ""}
         </div>
       </article>`;
   }).join("");
@@ -894,9 +1182,8 @@ $("#reg-input").addEventListener("change", async () => {
     const data = await api("/api/regulations", { method: "POST", body: form });
     await loadRegulations();
     state.regulationId = data.regulation.id;
-    $$("#regulation-select option").forEach((option) => {
-      option.selected = option.value === data.regulation.id;
-    });
+    renderRegulationOptions();
+    if (state.termsSource !== "pdf") setTermsSource("pdf", { check: false });
     renderRegMeta();
     toast(`규정을 불러왔습니다 · ${data.regulation.article_count}개 조문`);
     runMatch();

@@ -494,6 +494,40 @@ main {
 }
 .ai-endpoint-row p { margin-top: 6px; color: #8a5a1c; }
 
+/* ---------------- 3단계 주제: 근거 가져오기 경로 ---------------- */
+.terms-source-options { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 520px; }
+@media (max-width: 760px) {
+  .terms-source-options { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: none; }
+}
+.terms-panel { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--line); }
+.terms-panel[hidden] { display: none; }
+.terms-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.terms-controls .select { min-width: 220px; flex: 1 1 260px; }
+.terms-controls .check-row { margin: 0; }
+.terms-panel > p { margin-top: 7px; }
+.terms-note {
+  margin: 0 0 10px;
+  padding: 9px 12px;
+  border-radius: 9px;
+  background: var(--brand-soft);
+  color: #0b4f55;
+  font-size: 12.5px;
+}
+.match-reason {
+  margin-top: 8px;
+  padding: 8px 11px;
+  border-radius: 8px;
+  background: var(--brand-soft);
+  color: #0b4f55;
+  font-size: 12.5px;
+}
+.match-reason b { margin-right: 7px; color: var(--teal); }
+
 /* ---------------- 2단계 ---------------- */
 /* ---------------- 그림 감지 안내 ---------------- */
 .image-notice-wrap { margin-bottom: 14px; }

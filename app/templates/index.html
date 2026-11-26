@@ -182,18 +182,55 @@
 
   <!-- ============================ 3단계 ============================ -->
   <section class="panel" id="panel-3">
-    <div class="card">
-      <div class="card-head row">
-        <div>
-          <h2>약관·규정 근거 위치</h2>
-          <p class="muted small">초안의 문장마다 근거가 될 만한 조항을 찾아 조문 번호·쪽수와 함께 보여 줍니다.</p>
+    <section class="ai-mode" id="terms-source" aria-labelledby="terms-source-title">
+      <div class="ai-mode-head">
+        <div class="ai-mode-title">
+          <strong id="terms-source-title">약관·규정 근거 가져오기</strong>
+          <span class="muted small">사내 표준약관 AI가 있으면 연결하고, 없으면 규정 PDF를 올려 조항을 찾습니다. 나중에 바꿔도 됩니다.</span>
         </div>
-        <div class="reg-actions">
+        <span class="ai-status is-check" id="terms-status">
+          <span class="dot"></span><span id="terms-status-text">확인 중…</span>
+        </span>
+      </div>
+      <div class="ai-mode-options terms-source-options" role="radiogroup" aria-label="약관 근거 가져오기">
+        <label class="ai-option" title="사내 표준약관 AI 연결">
+          <input type="radio" name="terms-source" value="internal" />
+          <span class="ai-option-name">사내 표준약관 AI</span>
+          <span class="ai-option-cap">연결</span>
+        </label>
+        <label class="ai-option" title="규정 PDF 업로드 / 내장 샘플">
+          <input type="radio" name="terms-source" value="pdf" checked />
+          <span class="ai-option-name">규정 PDF</span>
+          <span class="ai-option-cap">업로드 · 내장 샘플</span>
+        </label>
+      </div>
+      <div class="ai-mode-detail" id="terms-source-detail"></div>
+      <div class="ai-notice-wrap" id="terms-notice" hidden></div>
+
+      <div class="terms-panel" id="terms-pdf-panel">
+        <div class="terms-controls">
           <select id="regulation-select" class="select"></select>
           <button class="btn ghost" id="btn-upload-reg">규정 PDF 올리기</button>
           <input type="file" id="reg-input" accept=".pdf" hidden />
           <button class="btn" id="btn-match">조항 매칭</button>
         </div>
+        <p class="muted small">내장 샘플은 공개 약관(법제처 게시본)입니다.</p>
+      </div>
+
+      <div class="terms-panel" id="terms-internal-panel" hidden>
+        <div class="terms-controls">
+          <button class="btn" id="btn-match-internal">사내 표준약관 AI로 조항 찾기</button>
+          <button class="btn ghost" id="btn-terms-to-pdf">규정 PDF로 진행하기</button>
+          <label class="check-row small"><input type="checkbox" id="terms-mask" /> 개인정보를 가린 사본만 보내기</label>
+        </div>
+        <p class="muted small" id="terms-internal-hint">사내망 안에서만 처리됩니다. 주소를 모르면 아래 '규정 PDF'로 진행하세요.</p>
+      </div>
+    </section>
+
+    <div class="card">
+      <div class="card-head">
+        <h2>약관·규정 근거 위치</h2>
+        <p class="muted small">초안의 문장마다 근거가 될 만한 조항을 찾아 조문 번호·쪽수와 함께 보여 줍니다.</p>
       </div>
       <div class="reg-meta" id="reg-meta"></div>
       <p class="disclaimer">이 기능은 법적 판단이 아니라 <strong>확인이 필요한 지점과 근거 후보</strong>를 짚는 검토 보조입니다. 실제 적용 여부는 원문 조항과 사내 규정을 직접 확인하세요.</p>
