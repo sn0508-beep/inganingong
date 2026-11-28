@@ -3,7 +3,7 @@
 > **후임자의 질문으로 인수인계서의 빈틈을 채우는 AI 도구**
 > 한양대학교 「인간-인공지능협업제품서비스설계」 팀 프로젝트 · 팀원 4명 · 5주
 
-**현재 상태: 기획·MVP 범위 확정 단계 (2026-11-26 기준)**
+**현재 상태: 기획·MVP 범위 확정 단계 (2026-11-28 기준)**
 
 이 저장소에는 아직 코드가 없습니다. 지금 올라와 있는 것은 팀 회의 전사본과 팀원별 아이디어 탐색 기록, 그리고 그 사이의 설계·진행 정리입니다. 아래의 기능 설명은 2026-11-11 팀 회의에서 합의한 **기획 방향**입니다. 구현이 진행되는 대로 이 문서와 저장소를 함께 갱신합니다.
 
@@ -64,7 +64,7 @@
 
 | 이름 | GitHub | 역할·기여 | 저장소에 남긴 기록 |
 |---|---|---|---|
-| 이시내 | [@sn0508-beep](https://github.com/sn0508-beep) | 저장소 개설·운영 총괄, 문서 구조화, 회의 요약, 11/25 AI 환경·그림 감지 UX 설계 및 프로토타입 반영, 11/25 회의에서 인계자 우선 구조로 범위 정리 | `README.md`, `planning/meetings/261111-meeting-summary.md`, `planning/meetings/261118-meeting-summary.md`, `planning/meetings/261125-meeting-summary.md`, `idea-exploration-LEESINE.md`, `idea-exploration-LEESINE2.md`, `idea-exploration-LEESINE3.md`(개인 아이디어 메모) |
+| 이시내 | [@sn0508-beep](https://github.com/sn0508-beep) | 저장소 개설·운영 총괄, 문서 구조화, 회의 요약, 11/25 AI 환경·그림 감지 UX 설계 및 프로토타입 반영, 11/25 회의에서 인계자 우선 구조로 범위 정리, 11/28 공기업·사기업 공통 약관·용어 매칭 범용화 | `README.md`, `planning/meetings/261111-meeting-summary.md`, `planning/meetings/261118-meeting-summary.md`, `planning/meetings/261125-meeting-summary.md`, `idea-exploration-LEESINE.md`, `idea-exploration-LEESINE2.md`, `idea-exploration-LEESINE3.md`(개인 아이디어 메모) |
 | 최선주 | [@tteokbokkiyumyum](https://github.com/tteokbokkiyumyum) | 아이디어 탐색, 홍보 전략·채널별 게시 문구·인수인계서 품질 체크리스트 초안 작성 | `idea-exploration-CHOISUNJU.md`, `planning/promote/` 3건 |
 | 오홍걸 | [@zhdzm123](https://github.com/zhdzm123) | 아이디어 탐색, 11/11 회의 전사본 정리 | `idea-exploration-Hong.md`, `261111-record.md`(회의 전사본) |
 | 변지훈 | [@drum101014-dev](https://github.com/drum101014-dev) | 아이디어 탐색(현장 노하우 매뉴얼화) | `idea-exploration-BYEON.md` |
@@ -85,7 +85,7 @@ GitHub 핸들은 각 문서를 실제로 커밋한 작성자 계정과 파일명
 | 4주차 | 12/02 ~ 12/08 | 작성 가이드라인과 약관·법규 근거 제시 붙이기, 가상 자료로 시범 테스트, 한계·오류 정리 | ⬜ 진행 예정 |
 | 5주차 | 12/09 ~ 12/15 | 문서화·시연 정리, 동종 업계·커뮤니티 홍보와 피드백 수집, 최종 점검 | ⬜ 진행 예정 |
 
-**지금까지 확인되는 진행 상황 (2026-11-26 기준)**
+**지금까지 확인되는 진행 상황 (2026-11-28 기준)**
 
 - 2026-11-11 저녁 팀 회의로 주제 방향 확정
 - 2026-11-11 같은 날 팀원별 탐색 기록과 회의 전사본 업로드 (총 6개 문서)
@@ -97,6 +97,7 @@ GitHub 핸들은 각 문서를 실제로 커밋한 작성자 계정과 파일명
 - 2026-11-25 회의 요약 (@sn0508-beep, [`planning/meetings/261125-meeting-summary.md`](planning/meetings/261125-meeting-summary.md)) — 회의 전사본과 같은 날 설계·보완 기록을 한 문서로 정리. 인계자 우선 구조(Q&A 탭은 보조), "보안이 엄격한 조직에서도 무겁지 않게" 원칙에 따른 범위 축소, 역할·일정·홍보, AI 연결 환경 4단계·문서 그림 감지(프로토타입 `0702b08`·`3393f62`, 테스트 67 passed / 1 skipped)
 - 2026-11-26 v0.1 범위 조정 (@sn0508-beep) — 인수자용 Q&A 탭은 v0.1에서 의도적으로 보류하고 프로토타입은 인계자 흐름에 집중합니다. 포함 여부는 홍보·설문 피드백 결과로 정합니다 — 수요가 확인되면 구현, 불필요하면 최종 범위에서 제외
 - 2026-11-26 3단계 사내 표준약관 AI 연결·규정 PDF 폴백 구현 (@sn0508-beep, `feature/web-prototype` — `app/internal_terms.py`·`tests/test_internal_terms.py`·`tools/screenshot_terms.py` 신규, `.env.example`) — 3단계에서 사내 표준약관 AI 주소만 넣으면 그 기관 색인에서 조항을 받아 `조문 번호 · 쪽수 · 이유`로 보여 주고, 사내 AI가 없거나 연결되지 않으면 규정 PDF를 올려 같은 카드 형식으로 근거를 봅니다. 어느 쪽도 안 되면 "연동할 수 있는 사내 표준약관 AI를 찾지 못하였어요." 안내와 `다시 연결`·`규정 PDF 업로드로 진행하기` 버튼을 같은 카드에 둡니다. 자동 테스트 26건 추가(67 → 93 passed / 1 skipped)
+- 2026-11-28 약관·용어 매칭 범용 중립화 (@sn0508-beep, `feature/web-prototype` — `app/terms.py`·`app/checklist.py`·`tests/test_terms.py`) — 고정 용어 사전에 있던 특정 업종 전용어(전기사용계약·계약전력·전력량계 같은 전력 업종 용어)를 덜어내고, 올린 규정의 조문 제목·장에서 그 문서의 용어를 뽑아 쓰는 동적 추출을 도입해 공기업·사기업 약관에 함께 쓸 수 있게 했습니다. 12개 표준 항목의 예시 문구도 특정 업종에 치우치지 않게 다듬었습니다. 자동 테스트 16건 추가(93 → 109 passed / 1 skipped)
 - `main`에는 아직 코드가 없고, 프로토타입은 `feature/web-prototype`에서 검토 중입니다. `LICENSE`·실행 안내는 미정
 
 ---
