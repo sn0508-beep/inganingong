@@ -5,9 +5,11 @@
 
 **현재 상태: 기획·MVP 범위 확정 단계 (2026-11-28 기준)**
 
+**웹 프로토타입 데모 바로 보기 → <https://sn0508-beep.github.io/inganingong/>** (설치·로그인 없이 브라우저에서 바로 열립니다. 원본 코드는 `feature/web-prototype` 브랜치에 있습니다)
+
 이 저장소에는 아직 코드가 없습니다. 지금 올라와 있는 것은 팀 회의 전사본과 팀원별 아이디어 탐색 기록, 그리고 그 사이의 설계·진행 정리입니다. 아래의 기능 설명은 2026-11-11 팀 회의에서 합의한 **기획 방향**입니다. 구현이 진행되는 대로 이 문서와 저장소를 함께 갱신합니다.
 
-웹 프로토타입 v0.1은 `feature/web-prototype` 브랜치에 올려 팀 검토 중이며, `main`에는 아직 병합하지 않았습니다. 진행 내용은 [`planning/meetings/261118-meeting-summary.md`](planning/meetings/261118-meeting-summary.md)와 [`planning/meetings/261125-meeting-summary.md`](planning/meetings/261125-meeting-summary.md)에 정리했습니다.
+웹 프로토타입 v0.1은 `feature/web-prototype` 브랜치에 올려 팀 검토 중이며, `main`에는 아직 병합하지 않았습니다. 화면을 고칠 때는 `gh-pages`가 아니라 이 브랜치의 `app/templates/index.html`·`app/static/app.css`·`app/static/app.js`를 고칩니다 — `gh-pages`는 배포된 시연본입니다. 진행 내용은 [`planning/meetings/261118-meeting-summary.md`](planning/meetings/261118-meeting-summary.md)와 [`planning/meetings/261125-meeting-summary.md`](planning/meetings/261125-meeting-summary.md)에 정리했습니다.
 
 ---
 
@@ -98,7 +100,8 @@ GitHub 핸들은 각 문서를 실제로 커밋한 작성자 계정과 파일명
 - 2026-11-26 v0.1 범위 조정 (@sn0508-beep) — 인수자용 Q&A 탭은 v0.1에서 의도적으로 보류하고 프로토타입은 인계자 흐름에 집중합니다. 포함 여부는 홍보·설문 피드백 결과로 정합니다 — 수요가 확인되면 구현, 불필요하면 최종 범위에서 제외
 - 2026-11-26 3단계 사내 표준약관 AI 연결·규정 PDF 폴백 구현 (@sn0508-beep, `feature/web-prototype` — `app/internal_terms.py`·`tests/test_internal_terms.py`·`tools/screenshot_terms.py` 신규, `.env.example`) — 3단계에서 사내 표준약관 AI 주소만 넣으면 그 기관 색인에서 조항을 받아 `조문 번호 · 쪽수 · 이유`로 보여 주고, 사내 AI가 없거나 연결되지 않으면 규정 PDF를 올려 같은 카드 형식으로 근거를 봅니다. 어느 쪽도 안 되면 "연동할 수 있는 사내 표준약관 AI를 찾지 못하였어요." 안내와 `다시 연결`·`규정 PDF 업로드로 진행하기` 버튼을 같은 카드에 둡니다. 자동 테스트 26건 추가(67 → 93 passed / 1 skipped)
 - 2026-11-28 약관·용어 매칭 범용 중립화 (@sn0508-beep, `feature/web-prototype` — `app/terms.py`·`app/checklist.py`·`tests/test_terms.py`) — 고정 용어 사전에 있던 특정 업종 전용어(전기사용계약·계약전력·전력량계 같은 전력 업종 용어)를 덜어내고, 올린 규정의 조문 제목·장에서 그 문서의 용어를 뽑아 쓰는 동적 추출을 도입해 공기업·사기업 약관에 함께 쓸 수 있게 했습니다. 12개 표준 항목의 예시 문구도 특정 업종에 치우치지 않게 다듬었습니다. 자동 테스트 16건 추가(93 → 109 passed / 1 skipped)
-- `main`에는 아직 코드가 없고, 프로토타입은 `feature/web-prototype`에서 검토 중입니다. `LICENSE`·실행 안내는 미정
+- 2026-11-28 정적 데모 사이트 배포 (@sn0508-beep, `gh-pages` 브랜치 → GitHub Pages <https://sn0508-beep.github.io/inganingong/>) — 서버 없이 브라우저에서 1~4단계 화면을 그대로 눌러 볼 수 있는 시연본입니다. 원본 코드는 `feature/web-prototype`에 있고, `gh-pages`는 그 화면을 정적으로 빌드해 올린 결과물입니다
+- `main`에는 아직 코드가 없고, 프로토타입 원본은 `feature/web-prototype`에서 검토 중입니다. `LICENSE`·실행 안내는 미정
 
 ---
 
