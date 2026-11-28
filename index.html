@@ -1,0 +1,490 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>인수인계서 AI — 후임자의 질문으로 빈틈을 채우는 인수인계서</title>
+<link rel="stylesheet" href="app.css" />
+<link rel="stylesheet" href="demo.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="brand-mark">인</span>
+      <div class="brand-text">
+        <strong>인수인계서 AI</strong>
+        <span>후임자의 질문으로 빈틈을 채우는 인수인계서</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="mode-badge" id="mode-badge" title="LLM 연결 상태">
+        <span class="dot"></span><span id="mode-label">데모(오프라인) 모드</span>
+      </span>
+      <span class="privacy-note" id="privacy-note">외부 전송 없음</span>
+    </div>
+  </div>
+</header>
+<div class="demo-bar" role="note">
+  <div class="demo-bar-inner">
+    <span class="demo-bar-tag">정적 시연</span>
+    <span class="demo-bar-text">GitHub Pages 정적 시연 버전 · <code>feature/web-prototype</code> UI 미리보기 — 서버 없이 브라우저에서 4단계가 모두 동작합니다</span>
+  </div>
+</div>
+
+
+<nav class="stepper" aria-label="진행 단계">
+  <ol>
+    <li class="step is-active" data-step="1"><span class="num">1</span><span class="txt">시작</span></li>
+    <li class="step" data-step="2"><span class="num">2</span><span class="txt">빈틈 점검</span></li>
+    <li class="step" data-step="3"><span class="num">3</span><span class="txt">약관·규정 근거</span></li>
+    <li class="step" data-step="4"><span class="num">4</span><span class="txt">내보내기</span></li>
+  </ol>
+</nav>
+
+<main>
+  <!-- ============================ 1단계 ============================ -->
+  <section class="panel is-active" id="panel-1">
+    <section class="ai-mode" id="ai-mode" aria-labelledby="ai-mode-title">
+      <div class="ai-mode-head">
+        <div class="ai-mode-title">
+          <strong id="ai-mode-title">AI 연결 환경</strong>
+          <span class="muted small">이 환경에서 AI를 어디까지 쓸지 고릅니다. 나중에 바꿔도 됩니다.</span>
+        </div>
+        <span class="ai-status is-check" id="ai-mode-status">
+          <span class="dot"></span><span id="ai-mode-status-text">연결 확인 중…</span>
+        </span>
+      </div>
+      <div class="ai-mode-options" role="radiogroup" aria-label="AI 연결 환경">
+        
+        <label class="ai-option" title="사내 AI (텍스트+그림)">
+          <input type="radio" name="ai-mode" value="internal_multimodal"  />
+          <span class="ai-option-name">사내 AI</span>
+          <span class="ai-option-cap">텍스트+그림</span>
+        </label>
+        
+        <label class="ai-option" title="사내 AI (텍스트만)">
+          <input type="radio" name="ai-mode" value="internal_text"  />
+          <span class="ai-option-name">사내 AI</span>
+          <span class="ai-option-cap">텍스트만</span>
+        </label>
+        
+        <label class="ai-option" title="외부 AI 연동 (민감정보 가림)">
+          <input type="radio" name="ai-mode" value="external_masked"  />
+          <span class="ai-option-name">외부 AI 연동</span>
+          <span class="ai-option-cap">민감정보 가림</span>
+        </label>
+        
+        <label class="ai-option" title="AI 미연결 (기본 규칙 점검)">
+          <input type="radio" name="ai-mode" value="offline_rules" checked />
+          <span class="ai-option-name">AI 미연결</span>
+          <span class="ai-option-cap">기본 규칙 점검</span>
+        </label>
+        
+      </div>
+      <div class="ai-mode-detail" id="ai-mode-detail"></div>
+      <div class="ai-notice-wrap" id="ai-notice" hidden></div>
+    </section>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-head">
+          <h2>초안 준비</h2>
+          <p class="muted">기존 인수인계서가 있으면 올리고, 없으면 표준 틀에서 시작하세요.</p>
+        </div>
+
+        <div class="tabs" role="tablist">
+          <button class="tab is-active" data-tab="file" role="tab">파일 올리기</button>
+          <button class="tab" data-tab="paste" role="tab">직접 붙여넣기</button>
+        </div>
+
+        <div class="tab-panel is-active" id="tab-file">
+          <label class="dropzone" id="dropzone" for="file-input">
+            <span class="dz-icon">↑</span>
+            <strong>파일을 끌어다 놓거나 클릭해서 선택</strong>
+            <span class="muted small">.docx · .hwpx · .md · .txt (브라우저에서 바로 읽음)</span>
+            <input type="file" id="file-input" accept=".hwp,.hwpx,.docx,.pdf,.txt,.md" hidden />
+          </label>
+          <p class="file-status muted small" id="file-status"></p>
+          <ul class="warn-list" id="parse-warnings"></ul>
+        </div>
+
+        <div class="tab-panel" id="tab-paste">
+          <label class="field-label" for="draft-input">초안 텍스트</label>
+          <p class="muted small">업무 메모, 기존 인수인계서 내용, 회의 메모를 그대로 붙여넣어도 됩니다.</p>
+        </div>
+
+        <div class="btn-row mt">
+          <button class="btn ghost" id="btn-sample">가상 샘플 불러오기</button>
+          <button class="btn ghost" id="btn-template">표준 템플릿으로 시작</button>
+        </div>
+        <div class="sample-links">
+          <span class="muted small">같은 샘플을 파일로 받아 업로드 테스트:</span>
+          <a href="samples/handover_sample.md" download>.md</a>
+          <a href="samples/handover_sample.docx" download>.docx</a>
+          <a href="samples/handover_sample.hwpx" download>.hwpx</a>
+        </div>
+        <p class="muted small mt-s" id="sample-notice">가상 샘플입니다. 회사명·인물·연락처·금액은 모두 지어낸 값이며 실제 기관 자료가 아닙니다. 2~3단계 기능을 바로 확인할 수 있도록 일부 항목을 일부러 비워 두었습니다.</p>
+
+        <label class="field-label mt" for="draft-input">초안 (여기서 바로 고칠 수 있습니다)</label>
+        <textarea id="draft-input" class="editor" rows="11"
+          placeholder="예)&#10;# 인수인계서&#10;- 담당 업무: 계약 변경 접수&#10;- 정기 업무: 매월 초 결과 보고"></textarea>
+
+        <div class="mask-box">
+          <div class="mask-row">
+            <div>
+              <strong>개인정보 자동 가림</strong>
+              <p class="muted small">전화번호·이메일·주민등록번호 등을 LLM에 보내기 전에 가립니다. 원문은 화면과 내보내기에 그대로 남습니다.</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="mask-toggle" checked />
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="mask-report" id="mask-report"></div>
+        </div>
+      </div>
+
+      <div class="card guide-card">
+        <div class="card-head">
+          <h2>작성 가이드 — 공기업 인수인계서 표준 12항목</h2>
+          <p class="muted">2단계 점검은 이 12개 항목을 그대로 기준으로 씁니다.</p>
+        </div>
+        <div class="guide-list" id="guide-list">
+          
+          <details class="guide-item">
+            <summary>
+              <span class="guide-num">1</span>
+              <span class="guide-title">업무 개요</span>
+              <span class="muted small">무엇을, 어디서, 언제까지 넘기는지</span>
+            </summary>
+            <div class="guide-body">
+              <p>맡은 업무의 범위와 조직 안에서의 위치, 인수인계 기간을 먼저 적습니다. 후임자가 &#39;이 자리가 어디에 속하고 무엇까지 책임지는 자리인지&#39;를 첫 문단에서 알 수 있어야 합니다.</p>
+              <ul class="small">
+                <li>업무 범위가 한 줄로만 적혀 실제로 어디까지가 내 일인지 불분명함</li><li>겸임·지원 업무(다른 팀 요청 처리)가 빠짐</li><li>인수인계 기간과 그 이후 연락 가능 여부가 없음</li>
+              </ul>
+              <p class="example"><span>예시</span> 고객의 계약 변경 접수와 요금 문의 1차 회신을 담당합니다. 고객지원팀 3인 중 계약·요금 파트를 맡고, 현장 설비 관련 민원은 시설운영팀으로 이관합니다.</p>
+            </div>
+          </details>
+          
+          <details class="guide-item">
+            <summary>
+              <span class="guide-num">2</span>
+              <span class="guide-title">일상·정기 업무</span>
+              <span class="muted small">주기·마감일·산출물</span>
+            </summary>
+            <div class="guide-body">
+              <p>매일/매주/매월/분기/연간으로 반복되는 업무를 표로 정리합니다. 주기만 적지 말고 마감일(며칠까지), 산출물(무엇을 어디에 내는지), 지연됐을 때 생기는 일까지 적습니다.</p>
+              <ul class="small">
+                <li>&#39;매월 초&#39;처럼 두루뭉술한 주기만 있고 정확한 마감일이 없음</li><li>보고 양식·파일 이름·제출 채널이 빠짐</li><li>휴일·결산일처럼 날짜가 밀리는 예외가 없음</li>
+              </ul>
+              <p class="example"><span>예시</span> 매월 3영업일까지 전월 이의신청 처리 결과를 팀 공유드라이브 &#39;월간보고&#39; 폴더에 올리고 팀장에게 메일 보고합니다. 분기 마감월에는 5영업일로 미뤄지고, 결산 주간에는 재무팀 일정에 맞춥니다.</p>
+            </div>
+          </details>
+          
+          <details class="guide-item">
+            <summary>
+              <span class="guide-num">3</span>
+              <span class="guide-title">예외·돌발 상황 대응</span>
+              <span class="muted small">자주 터지는 문제와 판단 기준</span>
+            </summary>
+            <div class="guide-body">
+              <p>정상 흐름보다 예외가 인수인계의 핵심입니다. 실제로 자주 생기는 문제, 그때의 판단 기준, 어디까지 혼자 처리하고 언제 보고하는지(에스컬레이션 기준)를 적습니다.</p>
+              <ul class="small">
+                <li>&#39;민원이 오면 처리&#39; 수준으로만 적혀 판단 기준이 없음</li><li>지난번에 크게 문제 된 사례와 그때의 조치가 빠짐</li><li>어느 선에서 팀장에게 올려야 하는지 없음</li>
+              </ul>
+              <p class="example"><span>예시</span> 민원 내용이 시스템 기록과 다르면 담당 부서에 원본 확인을 요청하고, 고객에게는 3영업일 내 1차 회신합니다. 환불 금액이 50만원을 넘으면 팀장 승인 후 처리합니다.</p>
+            </div>
+          </details>
+          
+          <details class="guide-item">
+            <summary>
+              <span class="guide-num">4</span>
+              <span class="guide-title">연락처·협력 체계</span>
+              <span class="muted small">누구에게, 언제, 어떻게</span>
+            </summary>
+            <div class="guide-body">
+              <p>내부 유관부서와 외부 협력업체·기관 담당자를 적습니다. 이름과 연락처뿐 아니라 &#39;무엇을 부탁하는 사람인지&#39;와 통화 가능 시간, 부재 시 대체 연락처까지 적습니다.</p>
+              <ul class="small">
+                <li>&#39;팀 공유 폴더 참고&#39;처럼 연락처를 다른 곳으로 미룸</li><li>업체 담당자 이름만 있고 연락 수단·통화 가능 시간이 없음</li><li>담당자 부재·퇴사 시 대체 연락처가 없음</li>
+              </ul>
+              <p class="example"><span>예시</span> 시설 점검 협력업체 ㈜한빛시설관리 김도현 과장(031-000-0000, 평일 09~17시). 점검 요청은 문자로 접수하고, 부재 시 사무실 대표번호로 연락합니다.</p>
+            </div>
+          </details>
+          
+          <details class="guide-item">
+            <summary>
+              <span class="guide-num">5</span>
+              <span class="guide-title">시스템·계정·권한</span>
+              <span class="muted small">무슨 시스템에 어떤 권한으로</span>
+            </summary>
+            <div class="guide-body">
+              <p>업무에 쓰는 시스템 이름, 내 계정의 권한 범위, 권한 신청·해제 절차와 승인자를 적습니다. 비밀번호 자체는 절대 적지 말고 &#39;어디에 보관되어 있는지&#39;만 적습니다.</p>
+              <ul class="small">
+                <li>시스템 이름만 있고 권한 등급·신청 절차가 없음</li><li>인수인계 시점에 권한을 넘기는 순서(해제·부여)가 없음</li><li>개인 계정으로 처리하던 업무가 그대로 넘어감</li>
+              </ul>
+              <p class="example"><span>예시</span> 계약 변경은 업무포털의 &#39;계약관리&#39; 화면에서 처리하며, 저는 조회·입력 권한만 있습니다. 권한 신청은 정보보호팀 권한신청서로 하고 승인은 팀장 전결입니다(3영업일 소요).</p>
+            </div>
+          </details>
+          
+          <details class="guide-item">
+            <summary>
+              <span class="guide-num">6</span>
+              <span class="guide-title">근거 규정·약관</span>
+              <span class="muted small">어떤 규정의 어떤 조항에 따라</span>
+            </summary>
+            <div class="guide-body">
+              <p>업무 처리의 근거가 되는 사내 규정, 공개 약관, 법령을 적습니다. 가능하면 조항 번호까지 적고, &#39;이 판단은 어느 조항을 근거로 하는지&#39;를 함께 남깁니다.</p>
+              <ul class="small">
+                <li>&#39;규정대로 처리&#39;라고만 적고 규정 이름·조항이 없음</li><li>약관이 개정된 시점(버전)이 표시되지 않음</li><li>예외적으로 적용하지 않는 조건이 빠짐</li>
+              </ul>
+              <p class="example"><span>예시</span> 계약 변경은 &#39;고객약관&#39; 제12조, 요금 이의신청은 같은 약관 제20조를 따릅니다. 적용 약관은 2026. 4. 1 시행본이며, 개정 시 사내 게시판 공지를 확인합니다.</p>
+            </div>
+          </details>
+          
+          <details class="guide-item">
+            <summary>
+              <span class="guide-num">7</span>
+              <span class="guide-title">진행 중 현안·미결 사항</span>
+              <span class="muted small">지금 굴러가는 일과 마감</span>
+            </summary>
+            <div class="guide-body">
+              <p>인수인계 시점에 진행 중인 건을 적습니다. 무엇이 어디까지 진행됐고, 다음 단계가 무엇이며, 누구에게 무엇을 요청해 둔 상태인지가 핵심입니다.</p>
+              <ul class="small">
+                <li>&#39;진행 중인 건은 담당자에게 문의&#39;로 끝남</li><li>요청해 둔 상태(회신 대기)가 빠져 후임자가 다시 요청함</li><li>마감일과 지연 시 생기는 일이 없음</li>
+              </ul>
+              <p class="example"><span>예시</span> A사 계약 변경 건은 접수 완료 후 설비점검 일정 회신을 기다리는 중입니다(요청일 11/14, 회신 기한 11/25). 지연되면 팀장 보고 후 고객에게 일정 재안내가 필요합니다.</p>
+            </div>
+          </details>
+          
+          <details class="guide-item">
+            <summary>
+              <span class="guide-num">8</span>
+              <span class="guide-title">문서·자료 위치</span>
+              <span class="muted small">어떤 파일이 어디에, 어느 게 최신</span>
+            </summary>
+            <div class="guide-body">
+              <p>업무에 쓰는 문서·양식·이력이 어디에 있는지 경로까지 적습니다. 같은 이름의 파일이 여러 개일 때 무엇이 최신인지 판단하는 규칙도 함께 적습니다.</p>
+              <ul class="small">
+                <li>&#39;공유드라이브 참고&#39; 수준으로만 적음</li><li>양식 원본과 작성본이 구분되지 않음</li><li>최신본 판단 기준(날짜·버전 규칙)이 없음</li>
+              </ul>
+              <p class="example"><span>예시</span> 계약 서식 원본은 \\files\고객지원\계약\_양식(수정 금지), 월별 처리대장은 같은 폴더 &#39;2026&#39; 하위에 월별로 저장합니다. 최신본은 파일명 끝 날짜(예: _v20261114)로 판단합니다.</p>
+            </div>
+          </details>
+          
+          <details class="guide-item">
+            <summary>
+              <span class="guide-num">9</span>
+              <span class="guide-title">예산·계약·정산</span>
+              <span class="muted small">계약 기간, 예산 집행, 정산 시점</span>
+            </summary>
+            <div class="guide-body">
+              <p>이 업무에 걸린 계약(용역·물품)과 예산을 적습니다. 계약 기간·금액·정산 주기, 발주·검수·지급 절차에서 이 자리가 하는 일을 구분해 적습니다.</p>
+              <ul class="small">
+                <li>계약이 있다는 사실만 적고 기간·금액·정산 시점이 없음</li><li>검수·지급 단계에서 누가 승인하는지 없음</li><li>연말 예산 집행 마감이 빠짐</li>
+              </ul>
+              <p class="example"><span>예시</span> 시설 점검 용역은 2026.1.1~12.31, 연 4,800만원(월 정산)이며, 매월 검수확인서를 만들어 재무팀에 상신합니다. 연말 예산 집행 마감은 12/20입니다.</p>
+            </div>
+          </details>
+          
+          <details class="guide-item">
+            <summary>
+              <span class="guide-num">10</span>
+              <span class="guide-title">보고·승인 라인</span>
+              <span class="muted small">누구에게 어떤 형식으로</span>
+            </summary>
+            <div class="guide-body">
+              <p>정기·비정기 보고의 상대와 형식(구두/메일/보고서), 결재 단계를 적습니다. 긴급 사안일 때 어디까지 먼저 알리는지도 적습니다.</p>
+              <ul class="small">
+                <li>&#39;팀장님께 보고&#39;만 있고 형식·주기·결재 단계가 없음</li><li>대결·전결 기준이 없어 매번 물어봐야 함</li><li>긴급 시 보고 순서가 없음</li>
+              </ul>
+              <p class="example"><span>예시</span> 주간 업무보고는 매주 금요일 15시까지 팀장에게 메일(정해진 양식), 월간 보고는 팀장 전결 후 본부장 보고입니다. 민원 과열 등 긴급 사안은 즉시 팀장에게 전화 후 메일로 정리합니다.</p>
+            </div>
+          </details>
+          
+          <details class="guide-item">
+            <summary>
+              <span class="guide-num">11</span>
+              <span class="guide-title">검증·확인 방법</span>
+              <span class="muted small">결과가 맞는지 어떻게 아는가</span>
+            </summary>
+            <div class="guide-body">
+              <p>업무 결과가 제대로 됐는지 확인하는 방법을 적습니다. 대조 대상, 확인 순서, 틀렸을 때의 정정 절차까지 적으면 후임자가 스스로 검증할 수 있습니다.</p>
+              <ul class="small">
+                <li>&#39;확인 후 처리&#39;만 있고 무엇과 대조하는지 없음</li><li>오류를 발견했을 때의 정정·재처리 절차가 없음</li><li>확인 결과를 누구에게 승인받는지 없음</li>
+              </ul>
+              <p class="example"><span>예시</span> 계약 변경 등록 후에는 업무포털 처리내역과 접수대장을 대조하고, 금액 변동이 있으면 모의계산 화면으로 한 번 더 확인합니다. 금액이 다르면 당일 정정 요청, 다음 달 청구에 반영됩니다.</p>
+            </div>
+          </details>
+          
+          <details class="guide-item">
+            <summary>
+              <span class="guide-num">12</span>
+              <span class="guide-title">인수인계 후 지원</span>
+              <span class="muted small">언제까지 물어볼 수 있는가</span>
+            </summary>
+            <div class="guide-body">
+              <p>인수인계 이후 질문을 받아 줄 수 있는 기간과 방법, 부재 시 대체 연락처를 적습니다. 남은 인수인계 일정(같이 볼 시간)도 적으면 좋습니다.</p>
+              <ul class="small">
+                <li>&#39;언제든 연락 주세요&#39;만 있고 실제 가능 기간이 없음</li><li>퇴사·전보 후 연락 방법이 없음</li><li>같이 확인해야 할 마지막 일정이 없음</li>
+              </ul>
+              <p class="example"><span>예시</span> 12/12까지 평일 오후에 질문 가능하고, 이후에는 후임 파트 동료(이OO 주임)에게 문의합니다. 12/10 15시에 통합테스트를 같이 보는 일정이 남아 있습니다.</p>
+            </div>
+          </details>
+          
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ 2단계 ============================ -->
+  <section class="panel" id="panel-2">
+    <div class="image-notice-wrap" id="image-notice" hidden></div>
+    <div class="summary-strip" id="analysis-summary"></div>
+    <div class="grid grid-side">
+      <aside class="card">
+        <div class="card-head">
+          <h2>항목별 점검</h2>
+          <p class="muted small">막대는 초안 기준, 옅은 부분은 답변으로 채워진 몫입니다.</p>
+        </div>
+        <div id="coverage-list" class="coverage-list"></div>
+      </aside>
+
+      <div class="card">
+        <div class="card-head row">
+          <div>
+            <h2>후임자 관점 꼬리질문</h2>
+            <p class="muted small">질문에 답하면 초안이 그만큼 채워집니다. 답을 모르면 '건너뜀'으로 남겨 두세요 — 마지막 문서에 '아직 답하지 못한 질문'으로 들어갑니다.</p>
+          </div>
+          <div class="filter-tabs" id="question-filter">
+            <button class="chip-tab is-active" data-filter="all">전체</button>
+            <button class="chip-tab" data-filter="unanswered">미답변</button>
+            <button class="chip-tab" data-filter="answered">답변 완료</button>
+            <button class="chip-tab" data-filter="skipped">건너뜀</button>
+          </div>
+        </div>
+        <div id="question-list" class="question-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ 3단계 ============================ -->
+  <section class="panel" id="panel-3">
+    <section class="ai-mode" id="terms-source" aria-labelledby="terms-source-title">
+      <div class="ai-mode-head">
+        <div class="ai-mode-title">
+          <strong id="terms-source-title">약관·규정 근거 가져오기</strong>
+          <span class="muted small">사내 표준약관 AI가 있으면 연결하고, 없으면 규정 PDF를 올려 조항을 찾습니다. 나중에 바꿔도 됩니다.</span>
+        </div>
+        <span class="ai-status is-check" id="terms-status">
+          <span class="dot"></span><span id="terms-status-text">확인 중…</span>
+        </span>
+      </div>
+      <div class="ai-mode-options terms-source-options" role="radiogroup" aria-label="약관 근거 가져오기">
+        <label class="ai-option" title="사내 표준약관 AI 연결">
+          <input type="radio" name="terms-source" value="internal" />
+          <span class="ai-option-name">사내 표준약관 AI</span>
+          <span class="ai-option-cap">연결</span>
+        </label>
+        <label class="ai-option" title="규정 PDF 업로드 / 내장 샘플">
+          <input type="radio" name="terms-source" value="pdf" checked />
+          <span class="ai-option-name">규정 PDF</span>
+          <span class="ai-option-cap">업로드 · 내장 샘플</span>
+        </label>
+      </div>
+      <div class="ai-mode-detail" id="terms-source-detail"></div>
+      <div class="ai-notice-wrap" id="terms-notice" hidden></div>
+
+      <div class="terms-panel" id="terms-pdf-panel">
+        <div class="terms-controls">
+          <select id="regulation-select" class="select"></select>
+          <button class="btn ghost" id="btn-upload-reg">규정 PDF 올리기</button>
+          <input type="file" id="reg-input" accept=".pdf" hidden />
+          <button class="btn" id="btn-match">조항 매칭</button>
+        </div>
+        <p class="muted small">내장 샘플은 공개 약관(법제처 게시본)입니다.</p>
+      </div>
+
+      <div class="terms-panel" id="terms-internal-panel" hidden>
+        <div class="terms-controls">
+          <button class="btn" id="btn-match-internal">사내 표준약관 AI로 조항 찾기</button>
+          <button class="btn ghost" id="btn-terms-to-pdf">규정 PDF로 진행하기</button>
+          <label class="check-row small"><input type="checkbox" id="terms-mask" /> 개인정보를 가린 사본만 보내기</label>
+        </div>
+        <p class="muted small" id="terms-internal-hint">사내망 안에서만 처리됩니다. 주소를 모르면 아래 '규정 PDF'로 진행하세요.</p>
+      </div>
+    </section>
+
+    <div class="card">
+      <div class="card-head">
+        <h2>약관·규정 근거 위치</h2>
+        <p class="muted small">초안의 문장마다 근거가 될 만한 조항을 찾아 조문 번호·쪽수와 함께 보여 줍니다.</p>
+      </div>
+      <div class="reg-meta" id="reg-meta"></div>
+      <p class="disclaimer">이 기능은 법적 판단이 아니라 <strong>확인이 필요한 지점과 근거 후보</strong>를 짚는 검토 보조입니다. 실제 적용 여부는 원문 조항과 사내 규정을 직접 확인하세요.</p>
+    </div>
+    <div id="terms-summary" class="summary-strip"></div>
+    <div id="match-list" class="match-list"></div>
+  </section>
+
+  <!-- ============================ 4단계 ============================ -->
+  <section class="panel" id="panel-4">
+    <div class="grid grid-side">
+      <aside class="card">
+        <div class="card-head">
+          <h2>문서 정보</h2>
+          <p class="muted small">비워 두면 '(미정)'으로 내보냅니다.</p>
+        </div>
+        <div class="form-grid">
+          <label><span>인계자</span><input id="meta-author" placeholder="예) 김하늘 대리" /></label>
+          <label><span>인수자</span><input id="meta-successor" placeholder="예) 이도윤 주임" /></label>
+          <label class="wide"><span>부서 · 직무</span><input id="meta-team" placeholder="예) 고객지원팀 계약·요금 업무" /></label>
+          <label class="wide"><span>인수인계 기간</span><input id="meta-period" placeholder="예) 2026-12-01 ~ 2026-12-05" /></label>
+        </div>
+        <label class="check-row">
+          <input type="checkbox" id="include-terms" checked />
+          <span>약관 근거 검토 결과 포함</span>
+        </label>
+        <div class="btn-row">
+          <button class="btn" id="btn-export">문서 생성</button>
+        </div>
+        <div class="btn-row">
+          <button class="btn ghost" id="btn-download-md" disabled>.md 내려받기</button>
+          <button class="btn ghost" id="btn-download-txt" disabled>.txt 내려받기</button>
+          <button class="btn ghost" id="btn-copy" disabled>복사</button>
+        </div>
+        <div class="open-questions" id="open-questions"></div>
+      </aside>
+
+      <div class="card preview-card">
+        <div class="card-head">
+          <h2>정리된 인수인계서</h2>
+          <p class="muted small" id="export-hint">문서를 생성하면 여기에 미리보기가 나옵니다.</p>
+        </div>
+        <div class="md-preview" id="export-preview"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="bottombar">
+  <div class="bottombar-inner">
+    <button class="btn ghost" id="btn-prev">← 이전</button>
+    <div class="step-hint" id="step-hint">초안을 준비하면 다음 단계로 갈 수 있습니다.</div>
+    <button class="btn primary" id="btn-next" disabled>빈틈 점검 →</button>
+  </div>
+</footer>
+
+<script>
+  window.__LLM__ = {"available": true, "detail": "외부 전송 없음 · 규칙 기반 질문 생성", "label": "데모(오프라인) 모드", "provider": "demo"};
+  window.__AI_MODES__ = [{"capability": "텍스트+그림", "external": false, "key": "internal_multimodal", "label": "사내 AI (텍스트+그림)", "name": "사내 AI", "needs": "internal", "privacy": "입력한 내용은 사내망 안에서만 처리됩니다.", "reads_images": true, "retry_label": "사내 AI 다시 연결하기", "summary": "사내 AI가 글자와 그림을 함께 읽고 질문을 더합니다."}, {"capability": "텍스트만", "external": false, "key": "internal_text", "label": "사내 AI (텍스트만)", "name": "사내 AI", "needs": "internal", "privacy": "입력한 내용은 사내망 안에서만 처리됩니다.", "reads_images": false, "retry_label": "사내 AI 다시 연결하기", "summary": "사내 AI에 글자만 보냅니다. 그림은 직접 보완합니다."}, {"capability": "민감정보 가림", "external": true, "key": "external_masked", "label": "외부 AI 연동 (민감정보 가림)", "name": "외부 AI 연동", "needs": "external", "privacy": "개인정보를 가린 사본만 외부로 전송됩니다. 원문은 화면과 내보내기에 그대로 남습니다.", "reads_images": true, "retry_label": "외부 AI 다시 연결하기", "summary": "개인정보를 가린 사본만 외부 AI로 보냅니다."}, {"capability": "기본 규칙 점검", "external": false, "key": "offline_rules", "label": "AI 미연결 (기본 규칙 점검)", "name": "AI 미연결", "needs": "none", "privacy": "입력한 내용은 외부로 전송되지 않습니다.", "reads_images": false, "retry_label": "", "summary": "AI 없이 규칙 기반 점검만 합니다."}];
+  window.__AI_DEFAULT__ = "offline_rules";
+  window.__CLIPBOARD_NOTICE__ = "복사되었습니다";
+</script>
+<script src="demo-core.js"></script>
+<script src="demo-api.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
