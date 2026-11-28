@@ -14,9 +14,9 @@
 
     → 200 {"matches": [
             {"sentence": "초안 문장",
-             "article_no": "제74조의2", "article_title": "요금에 대한 이의신청",
-             "page": 59, "chapter": "제8장", "excerpt": "…", 
-             "confidence": "높음", "reason": "이의신청·회신 표현이 조문과 일치"}
+             "article_no": "제12조", "article_title": "계약 변경의 처리",
+             "page": 15, "chapter": "제2장 계약", "excerpt": "…", 
+             "confidence": "높음", "reason": "계약·변경 표현이 조문과 일치"}
           ]}
 
 - `matches`는 `{"results": [...]}`·`{"data": {...}}`·배열 그대로도 받아 준다(기관마다 규격이 달라서).
