@@ -5,6 +5,8 @@
 
 **현재 상태: 웹 프로토타입 v0.1 동작 (2026-11-28 기준)**
 
+**웹 프로토타입 데모 바로 보기 → <https://sn0508-beep.github.io/inganingong/>** (설치·로그인 없이 브라우저에서 바로 열립니다)
+
 `app/`에 4단계 웹 프로토타입이 있습니다. 초안을 올리면(또는 표준 틀에서 시작하면) 빈틈을 점검해 후임자 관점 질문을 던지고, 공개 약관의 근거 조항을 조문 번호·쪽수와 함께 보여 준 뒤, 정리된 인수인계서와 "아직 답하지 못한 질문 목록"으로 내보냅니다. 실행 방법과 검증 결과는 [9. 웹 프로토타입](#9-웹-프로토타입-v01--2026-11-18)과 [`docs/prototype-v0.1.md`](docs/prototype-v0.1.md)에 정리했습니다. 이 버전을 만들며 정한 내용과 11/18 회의 기록은 [`planning/meetings/261118-meeting-summary.md`](planning/meetings/261118-meeting-summary.md)에, 11/25 회의의 결정(인계자 우선 구조·범위 축소·역할·일정·홍보)과 같은 날 더한 AI 연결 환경 선택·문서 그림 감지·보완 흐름은 [`planning/meetings/261125-meeting-summary.md`](planning/meetings/261125-meeting-summary.md)에 있습니다.
 
 ---
@@ -98,6 +100,7 @@ GitHub 핸들은 각 문서를 실제로 커밋한 작성자 계정과 파일명
 - 2026-11-26 v0.1 범위 조정 (@sn0508-beep) — 인수자용 Q&A 탭은 v0.1에서 의도적으로 보류하고 프로토타입은 인계자 흐름에 집중합니다. 포함 여부는 홍보·설문 피드백 결과로 정합니다 — 수요가 확인되면 구현, 불필요하면 최종 범위에서 제외
 - 2026-11-26 3단계 사내 표준약관 AI 연결·규정 PDF 폴백 구현 (@sn0508-beep, `feature/web-prototype` — `app/internal_terms.py`·`tests/test_internal_terms.py`·`tools/screenshot_terms.py` 신규, `.env.example`) — 3단계에서 사내 표준약관 AI 주소만 넣으면 그 기관 색인에서 조항을 받아 `조문 번호 · 쪽수 · 이유`로 보여 주고, 사내 AI가 없거나 연결되지 않으면 규정 PDF를 올려 같은 카드 형식으로 근거를 봅니다. 어느 쪽도 안 되면 "연동할 수 있는 사내 표준약관 AI를 찾지 못하였어요." 안내와 `다시 연결`·`규정 PDF 업로드로 진행하기` 버튼을 같은 카드에 둡니다. 자동 테스트 26건 추가(67 → 93 passed / 1 skipped)
 - 2026-11-28 약관·용어 매칭 범용 중립화 (@sn0508-beep, `feature/web-prototype` — `app/terms.py`·`app/checklist.py`·`tests/test_terms.py`) — 고정 용어 사전에 있던 특정 업종 전용어(전기사용계약·계약전력·전력량계 같은 전력 업종 용어)를 덜어내고, 올린 규정의 조문 제목·장에서 그 문서의 용어를 뽑아 쓰는 동적 추출을 도입해 공기업·사기업 약관에 함께 쓸 수 있게 했습니다. 12개 표준 항목의 예시 문구도 특정 업종에 치우치지 않게 다듬었습니다. 자동 테스트 16건 추가(93 → 109 passed / 1 skipped)
+- 2026-11-28 정적 데모 사이트 배포 (@sn0508-beep, `gh-pages` 브랜치 → GitHub Pages <https://sn0508-beep.github.io/inganingong/>) — 서버 없이 브라우저에서 1~4단계 화면을 그대로 눌러 볼 수 있는 시연본입니다. 원본 코드는 `feature/web-prototype`에 있고, `gh-pages`는 그 화면을 정적으로 빌드해 올린 결과물입니다
 - `LICENSE`는 여전히 미정
 
 ---
@@ -194,6 +197,8 @@ inganingong/
 
 2026-11-25에는 여기에 **AI 연결 환경 선택(4단계)** 과 **문서 그림 감지·보완 흐름**을 더했습니다. 정한 내용과 근거는 [`planning/meetings/261125-meeting-summary.md`](planning/meetings/261125-meeting-summary.md)에 정리했습니다.
 
+> **화면을 고칠 때는** `gh-pages`가 아니라 `feature/web-prototype`의 `app/templates/index.html`(화면 구조·문구) · `app/static/app.css`(스타일) · `app/static/app.js`(동작)를 고칩니다. `gh-pages`는 이 화면을 정적으로 빌드해 올린 시연본이라, 거기를 고쳐도 다음 배포에서 덮어써집니다.
+
 **실행**
 
 ```bash
@@ -202,6 +207,8 @@ pip install -r requirements.txt
 python run.py            # http://127.0.0.1:8000
 python -m pytest tests   # 자동 테스트
 ```
+
+설치 없이 바로 보는 데모 사이트: <https://sn0508-beep.github.io/inganingong/> (같은 화면을 서버 없이 연 시연본, 2026-11-28)
 
 **화면 4단계**
 
