@@ -25,6 +25,13 @@ import sys
 from pathlib import Path
 
 FIXED_NOW = "2026-11-28 14:00"          # 골든 값 비교용 고정 시각
+FAVICON_SVG = (
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
+    '<rect width="64" height="64" rx="14" fill="#1d5b86"/>'
+    '<text x="32" y="45" font-family="Pretendard,Apple SD Gothic Neo,Malgun Gothic,sans-serif"'
+    ' font-size="38" font-weight="700" fill="#fff" text-anchor="middle">\uc778</text>'
+    '</svg>\n'
+)
 DEMO_NOTE = (
     "GitHub Pages 정적 시연 버전 · <code>feature/web-prototype</code> UI 미리보기 — "
     "서버 없이 브라우저에서 4단계가 모두 동작합니다"
@@ -80,6 +87,11 @@ def render_index(mods: dict, repo: Path) -> str:
     html = html.replace(
         '<link rel="stylesheet" href="app.css" />',
         '<link rel="stylesheet" href="app.css" />\n<link rel="stylesheet" href="demo.css" />',
+    )
+    html = html.replace(
+        '<meta name="viewport" content="width=device-width, initial-scale=1" />',
+        '<meta name="viewport" content="width=device-width, initial-scale=1" />\n'
+        '<link rel="icon" href="favicon.svg" type="image/svg+xml" />',
     )
 
     # 샘플 파일 링크: 서버 API 대신 저장소에 함께 올린 샘플 파일을 가리킨다.
@@ -336,6 +348,7 @@ def main() -> None:
     write_json(site / "data" / "regulation.json", regulation_data(repo, mods))
     write_json(site / "data" / "expected.json", expected_data(repo, mods))
     (site / ".nojekyll").write_text("", encoding="utf-8")
+    (site / "favicon.svg").write_text(FAVICON_SVG, encoding="utf-8")
     copy_static(repo, site, Path(__file__).resolve().parent)
 
     sizes = {p.name: p.stat().st_size for p in sorted((site / "data").iterdir())}
