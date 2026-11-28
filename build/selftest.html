@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>정적 시연 자체 점검 — 인수인계서 AI</title>
+<style>
+  body { font-family: -apple-system, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+         margin: 0; padding: 24px; background: #f5f7fa; color: #16202b; line-height: 1.6; }
+  h1 { font-size: 20px; margin: 0 0 6px; }
+  p.lead { color: #63748a; margin: 0 0 18px; font-size: 13.5px; }
+  #out { max-width: 960px; }
+  .row { padding: 5px 10px; border-radius: 8px; font-size: 13px; margin-bottom: 4px;
+         font-family: ui-monospace, Menlo, Consolas, monospace; }
+  .ok { background: #e6f4ee; color: #0b5a3d; }
+  .bad { background: #fdeceb; color: #8f1d17; }
+  .info { background: #eaf2f8; color: #1d4b6b; }
+  .head { background: #fff; border: 1px solid #e2e8ef; font-weight: 700; margin-top: 14px; }
+  .diff { background: #fff8e8; color: #7a4a06; font-size: 12px; white-space: pre-wrap;
+          padding: 8px 10px; border-radius: 8px; margin: 2px 0 6px; }
+  #summary { font-weight: 700; margin: 10px 0 4px; }
+</style>
+</head>
+<body>
+<h1>정적 시연 자체 점검</h1>
+<p class="lead">demo-core.js 가 계산한 결과를 서버(Flask) 버전의 결과(data/expected.json)와 문항별로 대조합니다.</p>
+<div id="summary">점검 중…</div>
+<div id="out"></div>
+
+<script src="demo-core.js"></script>
+<script>
+(async function () {
+  const out = document.getElementById('out');
+  const summary = document.getElementById('summary');
+  let pass = 0;
+  let fail = 0;
+  const failures = [];
+
+  function line(cls, text) {
+    const div = document.createElement('div');
+    div.className = 'row ' + cls;
+    div.textContent = text;
+    out.appendChild(div);
+    return div;
+  }
+
+  function canon(value) {
+    if (Array.isArray(value)) return '[' + value.map(canon).join(',') + ']';
+    if (value && typeof value === 'object') {
+      return '{' + Object.keys(value).sort().map((key) => JSON.stringify(key) + ':' + canon(value[key])).join(',') + '}';
+    }
+    return JSON.stringify(value === undefined ? null : value);
+  }
+
+  function firstDiff(a, b, path) {
+    if (canon(a) === canon(b)) return null;
+    const p = path || '';
+    if (Array.isArray(a) && Array.isArray(b)) {
+      if (a.length !== b.length) return p + ' 길이 ' + a.length + ' ≠ ' + b.length;
+      for (let i = 0; i < a.length; i += 1) {
+        const d = firstDiff(a[i], b[i], p + '[' + i + ']');
+        if (d) return d;
+      }
+    }
+    if (a && b && typeof a === 'object' && typeof b === 'object' && !Array.isArray(a) && !Array.isArray(b)) {
+      const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
+      for (const key of keys) {
+        if (canon(a[key]) === canon(b[key])) continue;
+        const d = firstDiff(a[key], b[key], p + '.' + key);
+        if (d) return d;
+      }
+      return p;
+    }
+    return p + ': JS=' + JSON.stringify(a) + ' / PY=' + JSON.stringify(b);
+  }
+
+  function check(name, actual, expected) {
+    const diff = firstDiff(actual, expected);
+    if (!diff) { pass += 1; line('ok', 'PASS  ' + name); return true; }
+    fail += 1;
+    failures.push(name);
+    line('bad', 'FAIL  ' + name + '  →  ' + diff);
+    return false;
+  }
+
+  function reportDiff(name, actual, expected) {
+    const a = String(actual).split('\n');
+    const b = String(expected).split('\n');
+    for (let i = 0; i < Math.max(a.length, b.length); i += 1) {
+      if (a[i] !== b[i]) {
+        const div = document.createElement('div');
+        div.className = 'diff';
+        div.textContent = name + ' ' + (i + 1) + '번째 줄\nJS: ' + JSON.stringify(a[i]) + '\nPY: ' + JSON.stringify(b[i]);
+        out.appendChild(div);
+        return;
+      }
+    }
+  }
+
+  async function json(name) {
+    const response = await fetch('data/' + name);
+    return response.json();
+  }
+
+  try {
+    const [checklist, samples, regulation, expected] = await Promise.all([
+      json('checklist.json'), json('samples.json'), json('regulation.json'), json('expected.json'),
+    ]);
+
+    line('head', '1) 2단계 빈틈 점검 (app/gap.py)');
+    const cases = [
+      ['sample', samples.sample_text, {}],
+      ['sample_answered', samples.sample_text, expected.answers],
+      ['template', samples.template_text, {}],
+    ];
+    cases.forEach(([name, text, answers]) => {
+      const result = DEMO_CORE.assess(text, answers, checklist);
+      const slim = {
+        coverage: result.coverage.map((row) => ({
+          key: row.key, status: row.status, draft_ratio: row.draft_ratio, effective_ratio: row.effective_ratio,
+        })),
+        questions: result.questions.map((q) => ({
+          id: q.id, dimension: q.dimension, priority: q.priority, status: q.status,
+          source: q.source, signal: q.signal === undefined ? null : q.signal,
+        })),
+        stats: result.stats,
+        summary: result.summary,
+      };
+      const exp = expected.analyses[name];
+      check('analyze ' + name + ' · 커버리지', slim.coverage, exp.coverage);
+      check('analyze ' + name + ' · 질문 목록', slim.questions, exp.questions);
+      check('analyze ' + name + ' · 통계', slim.stats, exp.stats);
+      check('analyze ' + name + ' · 요약', slim.summary, exp.summary);
+    });
+
+    line('head', '2) 개인정보 가림 (app/masking.py)');
+    expected.masked.forEach((row, index) => {
+      const masked = DEMO_CORE.maskText(row.text);
+      check('mask #' + (index + 1) + ' 건수', masked.total, row.masked_count);
+      check('mask #' + (index + 1) + ' 종류', masked.types, row.types);
+    });
+
+    line('head', '3) 약관 조항 매칭 (app/terms.py)');
+    const termsResult = DEMO_CORE.matchRegulation(regulation, samples.sample_text);
+    check('terms · 통계', {
+      sentences: termsResult.stats.sentences,
+      matched: termsResult.stats.matched,
+      articles: termsResult.stats.articles,
+    }, expected.terms.stats);
+    const slimMatches = termsResult.matches.map((item) => ({
+      sentence: item.sentence,
+      primary: {
+        article_no: item.primary.article_no, title: item.primary.title,
+        printed_page: item.primary.printed_page, score: item.primary.score,
+        confidence: item.primary.confidence, matched_terms: item.primary.matched_terms,
+        matched_words: item.primary.matched_words, paragraph: item.primary.paragraph,
+        location: item.primary.location,
+      },
+      alternatives: item.alternatives.map((alt) => ({
+        article_no: alt.article_no, score: alt.score, confidence: alt.confidence,
+      })),
+      confidence: item.confidence,
+    }));
+    check('terms · 문장별 후보', slimMatches, expected.terms.matches);
+
+    line('head', '4) 내보내기 문서 (app/export.py)');
+    const analysis = DEMO_CORE.assess(samples.sample_text, expected.answers, checklist);
+    const doc = DEMO_CORE.buildExport(expected.meta, samples.sample_text, analysis, termsResult, {
+      checklist, now: '2026-11-28 14:00', image_note: '', image_count: 0,
+    });
+    if (check('export · 마크다운', doc.markdown, expected.export.markdown)) {
+      /* 본문이 같으면 텍스트 변환도 같아야 한다 */
+    } else {
+      reportDiff('markdown', doc.markdown, expected.export.markdown);
+    }
+    check('export · 일반 텍스트', doc.text, expected.export.text);
+    if (doc.text !== expected.export.text) reportDiff('text', doc.text, expected.export.text);
+
+    const imageDoc = DEMO_CORE.buildExport(expected.meta, samples.sample_text, analysis, null, {
+      checklist, now: '2026-11-28 14:00', image_note: '3쪽 조직도 — 계약팀 3명 · 요금팀 5명', image_count: 2,
+    });
+    check('export · 그림 보완 절 포함', imageDoc.markdown.includes('## 그림 속 내용 보완'), true);
+    check('export · 약관 근거 제외', imageDoc.markdown.includes('## 검토한 근거 규정'), false);
+
+    line('head', '5) 브라우저 기능');
+    check('압축 해제(DecompressionStream) 지원', typeof DecompressionStream !== 'undefined', true);
+    check('정규식 lookbehind 지원', (() => { try { new RegExp('(?<=[.다요음])\\s+'); return true; } catch (e) { return false; } })(), true);
+  } catch (error) {
+    line('bad', '점검 중 오류: ' + error.message + ' — ' + (error.stack || '').split('\n')[1]);
+    fail += 1;
+  }
+
+  summary.textContent = '결과: PASS ' + pass + ' · FAIL ' + fail + (failures.length ? ' — ' + failures.join(', ') : '');
+  summary.className = fail ? 'bad' : 'ok';
+  document.title = (fail ? 'FAIL ' + fail : 'PASS ' + pass) + ' · 자체 점검';
+})();
+</script>
+</body>
+</html>

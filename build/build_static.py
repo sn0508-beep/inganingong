@@ -302,11 +302,21 @@ def expected_data(repo: Path, mods: dict) -> dict:
 # ---------------------------------------------------------------------------
 
 def copy_static(repo: Path, site: Path, assets: Path) -> None:
-    for name in ("demo-core.js", "demo-api.js", "demo.css", "selftest.html"):
-        shutil.copy2(assets / name, site / name)
+    """정적 사이트 파일을 복사한다. 직접 쓴 파일(demo-*.js, demo.css, selftest.html)은
+    build/ 에 원본을 함께 두어, 이 브랜치만으로도 다시 빌드할 수 있게 한다."""
+    handwritten = ("demo-core.js", "demo-api.js", "demo.css", "selftest.html")
     build_dir = site / "build"
     build_dir.mkdir(exist_ok=True)
-    shutil.copy2(assets / "build_static.py", build_dir / "build_static.py")
+    if (assets / "build_static.py").resolve() != (build_dir / "build_static.py").resolve():
+        shutil.copy2(assets / "build_static.py", build_dir / "build_static.py")
+    for name in handwritten:
+        source = assets / name
+        in_build = build_dir / name
+        at_root = site / name
+        if source.resolve() != in_build.resolve():
+            shutil.copy2(source, in_build)
+        if source.resolve() != at_root.resolve():
+            shutil.copy2(source, at_root)
     shutil.copy2(repo / "app" / "static" / "app.js", site / "app.js")
     css = (repo / "app" / "static" / "app.css").read_text(encoding="utf-8")
     css = css.replace('url("/static/fonts/PretendardVariable.woff2")', 'url("fonts/PretendardVariable.woff2")')
